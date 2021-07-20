@@ -14,17 +14,33 @@ package org.eclipse.sirius.web.spring.graphql.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.eclipse.sirius.web.core.api.IRepresentationDescriptionSearchService;
+import org.eclipse.sirius.web.lsp.description.LspTextDescription;
+import org.eclipse.sirius.web.spring.collaborative.api.IEditingContextEventProcessorRegistry;
 import org.eclipse.sirius.web.spring.graphql.api.URLConstants;
 import org.eclipse.sirius.web.spring.graphql.ws.GraphQLWebSocketHandler;
+import org.eclipse.sirius.web.spring.graphql.ws.lsp.LanguageServerWebSocketHandler;
+import org.eclipse.sirius.web.spring.graphql.ws.lsp.TextualLanguageRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.util.StringUtils;
+import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistration;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.web.socket.server.HandshakeInterceptor;
 import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
 import graphql.GraphQL;
@@ -42,6 +58,8 @@ import io.micrometer.core.instrument.MeterRegistry;
 @EnableWebSocket
 public class WebSocketConfiguration implements WebSocketConfigurer {
 
+    private final Logger logger = LoggerFactory.getLogger(WebSocketConfiguration.class);
+
     private final String[] allowedOriginPatterns;
 
     private final GraphQL graphQL;
@@ -50,11 +68,22 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
 
     private final MeterRegistry meterRegistry;
 
-    public WebSocketConfiguration(@Value("${sirius.components.cors.allowedOriginPatterns:}") String[] allowedOriginPatterns, GraphQL graphQL, ObjectMapper objectMapper, MeterRegistry meterRegistry) {
+    private final IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry;
+
+    private final TextualLanguageRegistry textualLanguageRegistry;
+
+    private final IRepresentationDescriptionSearchService representationDescriptionSearchService;
+
+    public WebSocketConfiguration(@Value("${sirius.components.cors.allowedOriginPatterns:}") String[] allowedOriginPatterns, GraphQL graphQL, ObjectMapper objectMapper, MeterRegistry meterRegistry,
+            IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry, TextualLanguageRegistry textualLanguagesRegistry,
+            IRepresentationDescriptionSearchService representationDescriptionSearchService) {
         this.allowedOriginPatterns = Objects.requireNonNull(allowedOriginPatterns);
         this.graphQL = Objects.requireNonNull(graphQL);
         this.objectMapper = Objects.requireNonNull(objectMapper);
         this.meterRegistry = Objects.requireNonNull(meterRegistry);
+        this.editingContextEventProcessorRegistry = Objects.requireNonNull(editingContextEventProcessorRegistry);
+        this.textualLanguageRegistry = Objects.requireNonNull(textualLanguagesRegistry);
+        this.representationDescriptionSearchService = Objects.requireNonNull(representationDescriptionSearchService);
     }
 
     @Override
@@ -62,6 +91,56 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
         GraphQLWebSocketHandler graphQLWebSocketHandler = new GraphQLWebSocketHandler(this.objectMapper, this.graphQL, this.meterRegistry);
         WebSocketHandlerRegistration graphQLWebSocketRegistration = registry.addHandler(graphQLWebSocketHandler, URLConstants.GRAPHQL_SUBSCRIPTION_PATH);
         graphQLWebSocketRegistration.setAllowedOriginPatterns(this.allowedOriginPatterns);
+
+        List<LspTextDescription> allRegisteredTextualRepresentationDescriptions = this.representationDescriptionSearchService.getRepresentationDescriptions().stream()
+                .filter(LspTextDescription.class::isInstance).map(LspTextDescription.class::cast).collect(Collectors.toList());
+        // All textual DSLs share the same WebSocketHandler.
+        LanguageServerWebSocketHandler languageServerWebSocketHandler = new LanguageServerWebSocketHandler(this.objectMapper, this.meterRegistry, this.editingContextEventProcessorRegistry,
+                this.textualLanguageRegistry);
+        allRegisteredTextualRepresentationDescriptions.forEach(lspTextDescription -> {
+            // WebSocket URL is expected to look like
+            // "xxx/language-servers/$languageName/$editingContextId/$representationId".
+            WebSocketHandlerRegistration languageServerWebSocketRegistration = registry
+                    .addHandler(languageServerWebSocketHandler, URLConstants.LANGUAGE_SERVERS_PATH + "/" + lspTextDescription.getLanguageName() + "/*/*") //$NON-NLS-1$ //$NON-NLS-2$
+                    .addInterceptors(this.createLanguageServerWebSocketInterceptor());
+            languageServerWebSocketRegistration.setAllowedOriginPatterns(this.allowedOriginPatterns);
+        });
+    }
+
+    @Bean
+    public HandshakeInterceptor createLanguageServerWebSocketInterceptor() {
+        return new HandshakeInterceptor() {
+            @Override
+            public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
+                final String path = request.getURI().getPath();
+                // URI of the WebSocketSession should look like "wss://languageName/editingContextId/representationId".
+                if (StringUtils.countOccurrencesOf(path, "/") == 4) { //$NON-NLS-1$
+                    final String lastSegment = path.substring(path.lastIndexOf('/') + 1);
+                    final String pathWithoutLastSegment = path.substring(0, path.lastIndexOf('/'));
+                    final String segmentBeforeLastSegment = pathWithoutLastSegment.substring(pathWithoutLastSegment.lastIndexOf('/') + 1);
+                    final String pathWithoutLastTwoSegments = pathWithoutLastSegment.substring(0, pathWithoutLastSegment.lastIndexOf('/'));
+                    final String segmentBeforeLastTwoSegments = pathWithoutLastTwoSegments.substring(pathWithoutLastTwoSegments.lastIndexOf('/') + 1);
+
+                    final String languageName = segmentBeforeLastTwoSegments;
+                    final UUID editingContextId = UUID.fromString(segmentBeforeLastSegment);
+                    final UUID representationId = UUID.fromString(lastSegment);
+
+                    attributes.put("languageName", languageName); //$NON-NLS-1$
+                    attributes.put("editingContextId", editingContextId); //$NON-NLS-1$
+                    attributes.put("representationId", representationId); //$NON-NLS-1$
+
+                    return true;
+                } else {
+                    WebSocketConfiguration.this.logger.error("WebSocket URI path is not as expected: {}", path); //$NON-NLS-1$
+                    return false;
+                }
+            }
+
+            @Override
+            public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
+                // Nothing to do after handshake
+            }
+        };
     }
 
     @Bean

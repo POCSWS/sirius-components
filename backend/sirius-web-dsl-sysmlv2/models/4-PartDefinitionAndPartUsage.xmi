@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sysml:Namespace xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sysml="http://www.omg.org/spec/SysML/2.0" 
+identifier="fe0b84ca-ab94-492d-a8ad-20154b35610d">
+ 	<ownedRelationship xsi:type="sysml:Membership" memberElement="//@ownedRelationship.0/@ownedRelatedElement.0">
+		<ownedRelatedElement xsi:type="sysml:PartDefinition" name="MyPartDefinition"/>
+	</ownedRelationship>
+	<ownedRelationship xsi:type="sysml:Membership" memberElement="//@ownedRelationship.1/@ownedRelatedElement.0">
+		<ownedRelatedElement xsi:type="sysml:PartUsage" name="MyPartUsage" isComposite="false">
+			<ownedRelationship xsi:type="sysml:FeatureTyping" typedFeature="//@ownedRelationship.1/@ownedRelatedElement.0" type="//@ownedRelationship.0/@ownedRelatedElement.0"/>
+		</ownedRelatedElement>
+	</ownedRelationship>
+</sysml:Namespace>

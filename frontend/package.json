@@ -1,12 +1,12 @@
 {
-  "name": "@eclipse-sirius/sirius-components",
+  "name": "@pocsws/sirius-components",
   "version": "0.5.1",
   "author": "Eclipse Sirius",
   "license": "EPL-2.0",
   "description": "Reusable components used to build the Sirius Web frontend",
   "repository": {
     "type": "git",
-    "url": "https://github.com/eclipse-sirius/sirius-components"
+    "url": "https://github.com/POCSWS/sirius-components"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@apollo/client": "3.4.7",
+    "@codingame/monaco-jsonrpc": "^0.3.1",
     "@material-ui/core": "4.12.3",
     "@material-ui/icons": "4.11.2",
     "@rollup/plugin-commonjs": "20.0.0",
@@ -45,6 +46,9 @@
     "jest": "27.0.6",
     "jest-junit-reporter": "1.1.0",
     "jest-transform-css": "2.1.0",
+    "monaco-editor-core": "^0.22.3",
+    "monaco-languageclient": "^0.13.1-next",
+    "normalize-url": "^2.0.1",
     "postcss": "8.3.6",
     "prettier": "2.3.2",
     "prop-types": "15.7.2",
@@ -67,11 +71,14 @@
   },
   "peerDependencies": {
     "@apollo/client": "3.4.7",
+    "@codingame/monaco-jsonrpc": "^0.3.1",
     "@material-ui/core": "4.12.3",
     "@material-ui/icons": "4.11.2",
     "@xstate/react": "1.5.1",
     "graphql": "15.5.1",
     "graphql-tag": "2.12.5",
+    "monaco-editor-core": "^0.22.3",
+    "monaco-languageclient": "^0.13.1-next",
     "prop-types": ">=15.7.2",
     "react": ">=17.0.2",
     "react-dom": ">=17.0.2",

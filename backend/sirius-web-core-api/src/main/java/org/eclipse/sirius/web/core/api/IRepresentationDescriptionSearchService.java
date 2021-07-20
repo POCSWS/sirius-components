@@ -12,6 +12,7 @@
  *******************************************************************************/
 package org.eclipse.sirius.web.core.api;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,4 +25,6 @@ import org.eclipse.sirius.web.representations.IRepresentationDescription;
  */
 public interface IRepresentationDescriptionSearchService {
     Optional<IRepresentationDescription> findById(IEditingContext editingContext, UUID representationDescriptionId);
+
+    List<IRepresentationDescription> getRepresentationDescriptions();
 }

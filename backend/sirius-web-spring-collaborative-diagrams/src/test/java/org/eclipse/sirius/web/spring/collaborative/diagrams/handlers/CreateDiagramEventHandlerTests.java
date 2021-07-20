@@ -67,6 +67,11 @@ public class CreateDiagramEventHandlerTests {
 
                 return Optional.of(diagramDescription);
             }
+
+            @Override
+            public List<IRepresentationDescription> getRepresentationDescriptions() {
+                return null;
+            }
         };
 
         AtomicBoolean hasBeenCalled = new AtomicBoolean();

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sysml:Package xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sysml="http://www.omg.org/spec/SysML/2.0" identifier="fe0b84ca-ab94-492d-a8ad-20154b35610e">
+  <ownedRelationship xsi:type="sysml:Membership" memberName="subPackage" memberElement="86bc0426-fb99-47b0-9138-947746083cde">
+    <ownedRelatedElement xsi:type="sysml:Package" identifier="86bc0426-fb99-47b0-9138-947746083cde"/>
+  </ownedRelationship>
+  <ownedRelationship xsi:type="sysml:Membership" memberName="partDef1" memberElement="//@ownedRelationship.1/@ownedRelatedElement.0">
+    <ownedRelatedElement xsi:type="sysml:PartDefinition"/>
+  </ownedRelationship>
+  <ownedRelationship xsi:type="sysml:Membership" memberName="actionDef1" memberElement="//@ownedRelationship.2/@ownedRelatedElement.0">
+    <ownedRelatedElement xsi:type="sysml:ActionDefinition">
+      <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="//@ownedRelationship.2/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+        <ownedRelatedElement xsi:type="sysml:PerformActionUsage" isComposite="false">
+          <ownedRelationship xsi:type="sysml:Subsetting" subsettedFeature="//@ownedRelationship.5/@ownedRelatedElement.0" subsettingFeature="//@ownedRelationship.2/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0"/>
+        </ownedRelatedElement>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:Membership" memberElement="//@ownedRelationship.2/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0">
+        <ownedRelatedElement xsi:type="sysml:PortUsage" isComposite="false">
+          <ownedRelationship xsi:type="sysml:ConjugatedPortTyping" identifier="841a04db-f00b-498a-97f1-4c53bc093659" typedFeature="//@ownedRelationship.2/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0" portDefinition="//@ownedRelationship.3/@ownedRelatedElement.0"/>
+        </ownedRelatedElement>
+      </ownedRelationship>
+    </ownedRelatedElement>
+  </ownedRelationship>
+  <ownedRelationship xsi:type="sysml:Membership" memberName="portDef1" memberElement="//@ownedRelationship.3/@ownedRelatedElement.0">
+    <ownedRelatedElement xsi:type="sysml:PortDefinition">
+      <ownedRelationship xsi:type="sysml:Membership" memberElement="//@ownedRelationship.3/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+        <ownedRelatedElement xsi:type="sysml:PortUsage" isComposite="false">
+          <ownedRelationship xsi:type="sysml:FeatureTyping" identifier="2d4d2fb2-2679-4cde-90ad-53b126ceb0ec" typedFeature="//@ownedRelationship.3/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0" type="//@ownedRelationship.2/@ownedRelatedElement.0"/>
+        </ownedRelatedElement>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:ParameterMembership" memberParameter="//@ownedRelationship.3/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0">
+        <ownedRelatedElement xsi:type="sysml:ReferenceUsage" isComposite="false" direction="in"/>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:ParameterMembership" memberParameter="//@ownedRelationship.3/@ownedRelatedElement.0/@ownedRelationship.2/@ownedRelatedElement.0">
+        <ownedRelatedElement xsi:type="sysml:ReferenceUsage" isComposite="false" direction="out"/>
+      </ownedRelationship>
+    </ownedRelatedElement>
+  </ownedRelationship>
+  <ownedRelationship xsi:type="sysml:Membership" memberName="partUsage1" memberElement="//@ownedRelationship.4/@ownedRelatedElement.0">
+    <ownedRelatedElement xsi:type="sysml:PartUsage" isComposite="false">
+      <ownedRelationship xsi:type="sysml:ParameterMembership" memberParameter="//@ownedRelationship.4/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+        <ownedRelatedElement xsi:type="sysml:ReferenceUsage" isComposite="false" direction="in"/>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:ParameterMembership" memberParameter="//@ownedRelationship.4/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0">
+        <ownedRelatedElement xsi:type="sysml:ReferenceUsage" isComposite="false" direction="out"/>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:FeatureTyping" identifier="eaa8635d-9d03-4b40-adc6-8417a454f997" typedFeature="//@ownedRelationship.4/@ownedRelatedElement.0" type="//@ownedRelationship.1/@ownedRelatedElement.0"/>
+    </ownedRelatedElement>
+  </ownedRelationship>
+  <ownedRelationship xsi:type="sysml:Membership" memberName="actionUsage1" memberElement="//@ownedRelationship.5/@ownedRelatedElement.0">
+    <ownedRelatedElement xsi:type="sysml:ActionUsage" isComposite="false">
+      <ownedRelationship xsi:type="sysml:ParameterMembership" memberParameter="//@ownedRelationship.5/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+        <ownedRelatedElement xsi:type="sysml:ReferenceUsage" isComposite="false" direction="out"/>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:ParameterMembership" memberParameter="//@ownedRelationship.5/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0">
+        <ownedRelatedElement xsi:type="sysml:ReferenceUsage" isComposite="false" direction="in">
+          <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="ae169ffb-e5a5-44e4-88f5-02f7d9c9caf2">
+            <ownedRelatedElement xsi:type="sysml:ItemFlow" identifier="ae169ffb-e5a5-44e4-88f5-02f7d9c9caf2">
+              <ownedRelationship xsi:type="sysml:EndFeatureMembership" memberFeature="//@ownedRelationship.5/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+                <ownedRelatedElement xsi:type="sysml:ItemFlowEnd" isEnd="true">
+                  <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="//@ownedRelationship.5/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+                    <ownedRelatedElement xsi:type="sysml:ItemFlowFeature">
+                      <ownedRelationship xsi:type="sysml:Redefinition" redefiningFeature="//@ownedRelationship.5/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0" redefinedFeature="//@ownedRelationship.5/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0"/>
+                    </ownedRelatedElement>
+                  </ownedRelationship>
+                </ownedRelatedElement>
+              </ownedRelationship>
+              <ownedRelationship xsi:type="sysml:EndFeatureMembership" memberFeature="//@ownedRelationship.5/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0">
+                <ownedRelatedElement xsi:type="sysml:ItemFlowEnd" isEnd="true">
+                  <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="//@ownedRelationship.5/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+                    <ownedRelatedElement xsi:type="sysml:ItemFlowFeature">
+                      <ownedRelationship xsi:type="sysml:Redefinition" redefiningFeature="//@ownedRelationship.5/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0" redefinedFeature="//@ownedRelationship.4/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0"/>
+                    </ownedRelatedElement>
+                  </ownedRelationship>
+                </ownedRelatedElement>
+              </ownedRelationship>
+            </ownedRelatedElement>
+          </ownedRelationship>
+        </ownedRelatedElement>
+      </ownedRelationship>
+    </ownedRelatedElement>
+  </ownedRelationship>
+  <ownedRelationship xsi:type="sysml:Membership" memberName="actionDef2" memberElement="//@ownedRelationship.6/@ownedRelatedElement.0">
+    <ownedRelatedElement xsi:type="sysml:ActionDefinition"/>
+  </ownedRelationship>
+  <ownedRelationship xsi:type="sysml:Membership" memberName="actionUsage2" memberElement="//@ownedRelationship.7/@ownedRelatedElement.0">
+    <ownedRelatedElement xsi:type="sysml:ActionUsage" isComposite="false">
+      <ownedRelationship xsi:type="sysml:FeatureTyping" identifier="496f9574-35d1-4460-9466-f4f07ab8f176" typedFeature="//@ownedRelationship.7/@ownedRelatedElement.0" type="//@ownedRelationship.6/@ownedRelatedElement.0"/>
+      <ownedRelationship xsi:type="sysml:FeatureMembership" memberName="start" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0">
+        <ownedRelatedElement xsi:type="sysml:ActionUsage" isComposite="true">
+          <ownedRelationship xsi:type="sysml:ParameterMembership" memberParameter="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+            <ownedRelatedElement xsi:type="sysml:ReferenceUsage" isComposite="false" direction="in"/>
+          </ownedRelationship>
+        </ownedRelatedElement>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:FeatureMembership" memberName="done" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.2/@ownedRelatedElement.0">
+        <ownedRelatedElement xsi:type="sysml:ActionUsage" isComposite="true"/>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.3/@ownedRelatedElement.0">
+        <ownedRelatedElement xsi:type="sysml:MergeNode" isComposite="true"/>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.4/@ownedRelatedElement.0">
+        <ownedRelatedElement xsi:type="sysml:ActionUsage" isComposite="true">
+          <ownedRelationship xsi:type="sysml:ParameterMembership" memberParameter="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.4/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+            <ownedRelatedElement xsi:type="sysml:ReferenceUsage" isComposite="false" direction="in"/>
+          </ownedRelationship>
+        </ownedRelatedElement>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.5/@ownedRelatedElement.0">
+        <ownedRelatedElement xsi:type="sysml:AcceptActionUsage" isComposite="true">
+          <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="51c1db64-ad95-4d17-8930-b7531ac87909">
+            <ownedRelatedElement xsi:type="sysml:ItemFeature" identifier="51c1db64-ad95-4d17-8930-b7531ac87909"/>
+          </ownedRelationship>
+        </ownedRelatedElement>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.6/@ownedRelatedElement.0">
+        <ownedRelatedElement xsi:type="sysml:SendActionUsage" isComposite="true"/>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="5016ff74-ae17-4bd4-8895-61b782dca55e">
+        <ownedRelatedElement xsi:type="sysml:Succession" identifier="5016ff74-ae17-4bd4-8895-61b782dca55e">
+          <ownedRelationship xsi:type="sysml:EndFeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+            <ownedRelatedElement xsi:type="sysml:SourceEnd" isEnd="true">
+              <ownedRelationship xsi:type="sysml:Subsetting" subsettedFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0" subsettingFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0"/>
+            </ownedRelatedElement>
+          </ownedRelationship>
+          <ownedRelationship xsi:type="sysml:EndFeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0">
+            <ownedRelatedElement xsi:type="sysml:TargetEnd" isEnd="true">
+              <ownedRelationship xsi:type="sysml:Subsetting" subsettedFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.3/@ownedRelatedElement.0" subsettingFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0"/>
+            </ownedRelatedElement>
+          </ownedRelationship>
+        </ownedRelatedElement>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="8ca0e89c-feea-4d56-8479-812bcc2738bb">
+        <ownedRelatedElement xsi:type="sysml:Succession" identifier="8ca0e89c-feea-4d56-8479-812bcc2738bb">
+          <ownedRelationship xsi:type="sysml:EndFeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.8/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+            <ownedRelatedElement xsi:type="sysml:SourceEnd" isEnd="true">
+              <ownedRelationship xsi:type="sysml:Subsetting" subsettedFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.3/@ownedRelatedElement.0" subsettingFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.8/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0"/>
+            </ownedRelatedElement>
+          </ownedRelationship>
+          <ownedRelationship xsi:type="sysml:EndFeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.8/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0">
+            <ownedRelatedElement xsi:type="sysml:TargetEnd" isEnd="true">
+              <ownedRelationship xsi:type="sysml:Subsetting" subsettedFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.4/@ownedRelatedElement.0" subsettingFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.8/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0"/>
+            </ownedRelatedElement>
+          </ownedRelationship>
+        </ownedRelatedElement>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="369c85f1-240b-4d2c-af60-00c3bbac13bd">
+        <ownedRelatedElement xsi:type="sysml:Succession" identifier="369c85f1-240b-4d2c-af60-00c3bbac13bd">
+          <ownedRelationship xsi:type="sysml:EndFeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.9/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+            <ownedRelatedElement xsi:type="sysml:SourceEnd" isEnd="true">
+              <ownedRelationship xsi:type="sysml:Subsetting" subsettedFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.4/@ownedRelatedElement.0" subsettingFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.9/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0"/>
+            </ownedRelatedElement>
+          </ownedRelationship>
+          <ownedRelationship xsi:type="sysml:EndFeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.9/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0">
+            <ownedRelatedElement xsi:type="sysml:TargetEnd" isEnd="true">
+              <ownedRelationship xsi:type="sysml:Subsetting" subsettedFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.5/@ownedRelatedElement.0" subsettingFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.9/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0"/>
+            </ownedRelatedElement>
+          </ownedRelationship>
+        </ownedRelatedElement>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="dc900289-675f-44bc-9255-a3d246d4b5d4">
+        <ownedRelatedElement xsi:type="sysml:Succession" identifier="dc900289-675f-44bc-9255-a3d246d4b5d4">
+          <ownedRelationship xsi:type="sysml:EndFeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.10/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+            <ownedRelatedElement xsi:type="sysml:SourceEnd" isEnd="true">
+              <ownedRelationship xsi:type="sysml:Subsetting" subsettedFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.5/@ownedRelatedElement.0" subsettingFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.10/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0"/>
+            </ownedRelatedElement>
+          </ownedRelationship>
+          <ownedRelationship xsi:type="sysml:EndFeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.10/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0">
+            <ownedRelatedElement xsi:type="sysml:TargetEnd" isEnd="true">
+              <ownedRelationship xsi:type="sysml:Subsetting" subsettedFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.6/@ownedRelatedElement.0" subsettingFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.10/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0"/>
+            </ownedRelatedElement>
+          </ownedRelationship>
+        </ownedRelatedElement>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="00df8556-893f-49d3-abe4-762d4b7d491c">
+        <ownedRelatedElement xsi:type="sysml:Succession" identifier="00df8556-893f-49d3-abe4-762d4b7d491c">
+          <ownedRelationship xsi:type="sysml:EndFeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.11/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+            <ownedRelatedElement xsi:type="sysml:SourceEnd" isEnd="true">
+              <ownedRelationship xsi:type="sysml:Subsetting" subsettedFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.6/@ownedRelatedElement.0" subsettingFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.11/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0"/>
+            </ownedRelatedElement>
+          </ownedRelationship>
+          <ownedRelationship xsi:type="sysml:EndFeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.11/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0">
+            <ownedRelatedElement xsi:type="sysml:TargetEnd" isEnd="true">
+              <ownedRelationship xsi:type="sysml:Subsetting" subsettedFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.2/@ownedRelatedElement.0" subsettingFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.11/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0"/>
+            </ownedRelatedElement>
+          </ownedRelationship>
+        </ownedRelatedElement>
+      </ownedRelationship>
+      <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="f6266562-da8f-496e-a598-d4e9fac54423">
+        <ownedRelatedElement xsi:type="sysml:ItemFlow" identifier="f6266562-da8f-496e-a598-d4e9fac54423">
+          <ownedRelationship xsi:type="sysml:EndFeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.12/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+            <ownedRelatedElement xsi:type="sysml:ItemFlowEnd" isEnd="true">
+              <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.12/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+                <ownedRelatedElement xsi:type="sysml:ItemFlowFeature">
+                  <ownedRelationship xsi:type="sysml:Redefinition" redefiningFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.12/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0" redefinedFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0"/>
+                </ownedRelatedElement>
+              </ownedRelationship>
+            </ownedRelatedElement>
+          </ownedRelationship>
+          <ownedRelationship xsi:type="sysml:EndFeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.12/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0">
+            <ownedRelatedElement xsi:type="sysml:ItemFlowEnd" isEnd="true">
+              <ownedRelationship xsi:type="sysml:FeatureMembership" memberFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.12/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+                <ownedRelatedElement xsi:type="sysml:ItemFlowFeature">
+                  <ownedRelationship xsi:type="sysml:Redefinition" redefiningFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.12/@ownedRelatedElement.0/@ownedRelationship.1/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0" redefinedFeature="//@ownedRelationship.7/@ownedRelatedElement.0/@ownedRelationship.4/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0"/>
+                </ownedRelatedElement>
+              </ownedRelationship>
+            </ownedRelatedElement>
+          </ownedRelationship>
+        </ownedRelatedElement>
+      </ownedRelationship>
+    </ownedRelatedElement>
+  </ownedRelationship>
+</sysml:Package>
