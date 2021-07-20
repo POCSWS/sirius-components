@@ -11,7 +11,7 @@
  *     Obeo - initial API and implementation
  *******************************************************************************/
 import React from 'react';
-import { httpOrigin } from './URL';
+import { httpOrigin, wsOrigin } from './URL';
 
-const value = { httpOrigin };
+const value = { httpOrigin, wsOrigin };
 export const ServerContext = React.createContext(value);

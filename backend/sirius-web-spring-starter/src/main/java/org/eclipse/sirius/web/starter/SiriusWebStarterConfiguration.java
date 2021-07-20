@@ -40,6 +40,7 @@ import org.springframework.context.annotation.Configuration;
         "org.eclipse.sirius.web.spring.collaborative.selection",
         "org.eclipse.sirius.web.spring.collaborative.trees",
         "org.eclipse.sirius.web.spring.collaborative.validation",
+        "org.eclipse.sirius.web.lsp",
     }
 )
 // @formatter:on

@@ -1,0 +1,31 @@
+extend type Subscription {
+  lspTextEvent(input: LspTextEventInput!): LspTextEventPayload!
+}
+
+input LspTextEventInput {
+  id: ID!
+  editingContextId: ID!
+  lspTextId: ID!
+}
+
+union LspTextEventPayload = ErrorPayload | SubscribersUpdatedEventPayload | LspTextRefreshedEventPayload
+
+type LspTextRefreshedEventPayload {
+  id: ID!
+  lspText: LspText!
+}
+
+type LspText implements Representation {
+  id: ID!
+  descriptionId: ID!
+  kind: String!
+  label: String!
+  targetObjectId: String!
+  contents: String!
+  languageName: String!
+}
+
+type LspTextDescription implements RepresentationDescription {
+  id: ID!
+  label: String!
+}
