@@ -45,6 +45,9 @@ We also need to make sure that this allows collaboration of some kind on a textu
 
 WIP
 
+* TextField is read-only
+* Serialization of the EObject to represent textually is not done yet as it would require adding dependency to Xtext mechanisms
+
 == Consequences
 
 * Textual representations make it easy to put models in invalid states. Synchronizing with other representations may be a challenge. We do not wish to handle that challenge for now and will decide on the issue later / stick to the most straightforward implementation.
