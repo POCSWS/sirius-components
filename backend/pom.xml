@@ -46,6 +46,7 @@
 		<module>sirius-web-diagrams-layout</module>
 		<module>sirius-web-diagrams-tests</module>
 		<module>sirius-web-diagrams</module>
+		<module>sirius-web-dsl-statemachine</module>
 		<module>sirius-web-forms-tests</module>
 		<module>sirius-web-forms</module>
 		<module>sirius-web-lsp</module>
