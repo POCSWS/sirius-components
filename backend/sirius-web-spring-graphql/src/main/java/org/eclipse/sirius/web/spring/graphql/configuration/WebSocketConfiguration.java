@@ -18,7 +18,7 @@ import java.util.Objects;
 
 import org.eclipse.sirius.web.spring.graphql.api.URLConstants;
 import org.eclipse.sirius.web.spring.graphql.ws.GraphQLWebSocketHandler;
-import org.eclipse.sirius.web.spring.graphql.ws.LanguageServerWebSocketHandler;
+import org.eclipse.sirius.web.spring.graphql.ws.lsp.LanguageServerWebSocketHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -65,6 +65,7 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
         graphQLWebSocketRegistration.setAllowedOrigins(this.allowedOrigins);
 
         LanguageServerWebSocketHandler languageServerWebSocketHandler = new LanguageServerWebSocketHandler(this.objectMapper, this.meterRegistry);
+        // TODO: hardcoded statemachine path.
         WebSocketHandlerRegistration languageServerWebSocketRegistration = registry.addHandler(languageServerWebSocketHandler, "/language-servers/statemachine"); //$NON-NLS-1$
         languageServerWebSocketRegistration.setAllowedOrigins(this.allowedOrigins);
     }
