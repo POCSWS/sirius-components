@@ -26,8 +26,19 @@ import java.util.function.Function;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.jsonrpc.MessageConsumer;
 import org.eclipse.lsp4j.services.LanguageClient;
-import org.eclipse.xtext.ide.server.LanguageServerImpl;
+import org.eclipse.lsp4j.services.LanguageServer;
+import org.eclipse.sirius.web.dsl.statemachine.xtext.CustomResourceServiceProviderServiceLoader;
+import org.eclipse.sirius.web.dsl.statemachine.xtext.StatemachineResourceValidator;
+import org.eclipse.xtext.ide.ExecutorServiceProvider;
+import org.eclipse.xtext.ide.server.DefaultProjectDescriptionFactory;
+import org.eclipse.xtext.ide.server.IMultiRootWorkspaceConfigFactory;
+import org.eclipse.xtext.ide.server.IProjectDescriptionFactory;
+import org.eclipse.xtext.ide.server.MultiRootWorkspaceConfigFactory;
 import org.eclipse.xtext.ide.server.ServerModule;
+import org.eclipse.xtext.resource.IContainer;
+import org.eclipse.xtext.resource.IResourceServiceProvider;
+import org.eclipse.xtext.resource.containers.ProjectDescriptionBasedContainerManager;
+import org.eclipse.xtext.validation.IResourceValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,26 +53,48 @@ import org.slf4j.LoggerFactory;
 public class LspXtextHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(LspXtextHelper.class);
 
+    private final Injector injector = Guice.createInjector(new ServerModule() {
+        @Override
+        protected void configure() {
+            // Copied from super implementation
+            this.binder().bind(ExecutorService.class).toProvider(ExecutorServiceProvider.class);
+            this.bind(IMultiRootWorkspaceConfigFactory.class).to(MultiRootWorkspaceConfigFactory.class);
+            this.bind(IProjectDescriptionFactory.class).to(DefaultProjectDescriptionFactory.class);
+            this.bind(IContainer.Manager.class).to(ProjectDescriptionBasedContainerManager.class);
+
+            // Binding our own custom implementations.
+            this.bind(LanguageServer.class).to(LanguageServerImplWithCustomBuildListeners.class);
+            this.bind(IResourceValidator.class).to(StatemachineResourceValidator.class);
+            this.bind(IResourceServiceProvider.Registry.class).toProvider(CustomResourceServiceProviderServiceLoader.class).asEagerSingleton();
+        }
+    });
+
+    public LspXtextHelper() {
+    }
+
+    public Injector getInjector() {
+        return this.injector;
+    }
+
     /**
-     * Starts the Xtext Language Server. To shutdown, close stream {@code languageServerIn}.
+     * Creates and starts the Xtext Language Server.
      *
      * @param languageServerId
      *            the (non-{@code null}) {@link String} to uniquely identify this language server (in case we end up
      *            having to run several for some reason).
      * @param languageServerIn
      *            the (non-{@code null}) {@link InputStream} on which the Xtext Language Server will read JSON-RPC
-     *            messages which are LSP client requests.
+     *            messages which are LSP client requests. Closing this stream will shutdown the language server.
      * @param languageServerOut
      *            the (non-{@code null}) {@link OutputStream} on which the Xtext Language Server will write JSON-RPC
      *            messages which are LSP responses.
      */
-    public static void startXtextLanguageServer(String languageServerId, InputStream languageServerIn, OutputStream languageServerOut) {
+    public LanguageServer startXtextLanguageServer(String languageServerId, InputStream languageServerIn, OutputStream languageServerOut) {
         Objects.requireNonNull(languageServerId);
         Objects.requireNonNull(languageServerIn);
         Objects.requireNonNull(languageServerOut);
 
-        final Injector xtextLanguageServerInjector = Guice.createInjector(new ServerModule());
-        final LanguageServerImpl xtextLanguageServer = xtextLanguageServerInjector.getInstance(LanguageServerImpl.class);
+        final LanguageServerImplWithCustomBuildListeners xtextLanguageServer = this.getInjector().getInstance(LanguageServerImplWithCustomBuildListeners.class);
 
         final ExecutorService executorService = Executors.newCachedThreadPool();
         final Function<MessageConsumer, MessageConsumer> wrapper = consumer -> consumer;
@@ -85,5 +118,7 @@ public class LspXtextHelper {
             }
             return languageServerListening;
         });
+
+        return xtextLanguageServer;
     }
 }

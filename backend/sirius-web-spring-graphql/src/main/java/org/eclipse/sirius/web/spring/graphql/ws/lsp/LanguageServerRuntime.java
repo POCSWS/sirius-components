@@ -12,17 +12,32 @@
  *******************************************************************************/
 package org.eclipse.sirius.web.spring.graphql.ws.lsp;
 
+import com.google.inject.Injector;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.Principal;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.UUID;
+import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.eclipse.sirius.web.collaborative.api.services.IEditingContextEventProcessorRegistry;
+import org.eclipse.sirius.web.collaborative.lsp.api.dto.UpdateSemanticResourceInput;
+import org.eclipse.sirius.web.dsl.statemachine.xtext.CustomResourceServiceProviderServiceLoader;
+import org.eclipse.sirius.web.dsl.statemachine.xtext.StatemachineResourceValidator;
+import org.eclipse.sirius.web.dsl.statemachine.xtext.StatemachineResourceValidator.PostResourceValidationBehavior;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -36,8 +51,14 @@ import org.springframework.web.socket.WebSocketSession;
 public class LanguageServerRuntime {
     private final Logger logger = LoggerFactory.getLogger(LanguageServerRuntime.class);
 
+    private final Collection<Consumer<String>> responseListeners = new LinkedHashSet<>();
+
+    private PostResourceValidationBehavior postValidationBehavior;
+
     // TODO: for now we launch a Language Server per WebSocketSession.
     private final WebSocketSession session;
+
+    private final LspXtextHelper lspXtextHelper;
 
     // Messages received by the WebSocket will be accessible via this stream.
     private final PipedOutputStream webSocketOut = new PipedOutputStream();
@@ -78,14 +99,38 @@ public class LanguageServerRuntime {
      *            the (non-{@code null}) {@link WebSocketSession}. It is expected that all messages received for this
      *            session are headered and forwarded to {@link #getWebSocketOut()}.
      */
-    public LanguageServerRuntime(WebSocketSession webSocketSession) {
+    public LanguageServerRuntime(WebSocketSession webSocketSession, IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry) {
+        final String path = webSocketSession.getUri().getPath();
+        final String lastSegment = path.substring(path.lastIndexOf('/') + 1);
+        final UUID editingContextId = UUID.fromString(lastSegment);
+
         this.session = Objects.requireNonNull(webSocketSession);
+        Objects.requireNonNull(editingContextEventProcessorRegistry);
         try {
             this.languageServerIn.connect(this.webSocketOut);
         } catch (IOException ioException) {
             throw new RuntimeException(ioException);
         }
-        LspXtextHelper.startXtextLanguageServer(this.session.getId(), this.languageServerIn, this.languageServerOut);
+        this.lspXtextHelper = new LspXtextHelper();
+        LanguageServer xtextLanguageServer = this.lspXtextHelper.startXtextLanguageServer(this.session.getId(), this.languageServerIn, this.languageServerOut);
+
+        // With this build listener, we will have a chance to react after every build.
+        // What we want to do is if the build was successful, then update the model contents.
+        // languageServer.addCustomBuildListener(new
+        // XtextLanguageServerBuildListenerForUpdatingSemanticModel(webSocketSession,
+        // editingContextEventProcessorRegistry));
+        this.postValidationBehavior = (issues, resource) -> {
+            Principal principal = this.session.getPrincipal();
+            if (principal instanceof Authentication) {
+                SecurityContextHolder.setContext(new SecurityContextImpl((Authentication) principal));
+            }
+
+            if (issues.isEmpty()) {
+                editingContextEventProcessorRegistry.dispatchEvent(editingContextId, new UpdateSemanticResourceInput(resource));
+            }
+        };
+        final Injector dslInjector = this.lspXtextHelper.getInjector().getInstance(CustomResourceServiceProviderServiceLoader.class).getInjector("StatemachineSiriusWebIdeSetup"); //$NON-NLS-1$
+        dslInjector.getInstance(StatemachineResourceValidator.class).addPostValidationBehavior(this.postValidationBehavior);
     }
 
     /**
@@ -113,11 +158,17 @@ public class LanguageServerRuntime {
         }
     }
 
+    /**
+     * Shuts down this {@link LanguageServerRuntime}.
+     */
     public void shutdown() {
         try {
             this.languageServerIn.close();
         } catch (IOException ioException) {
             throw new RuntimeException(ioException);
+        } finally {
+            final Injector dslInjector = this.lspXtextHelper.getInjector().getInstance(CustomResourceServiceProviderServiceLoader.class).getInjector("StatemachineSiriusWebIdeSetup"); //$NON-NLS-1$
+            dslInjector.getInstance(StatemachineResourceValidator.class).removePostValidationBehavior(this.postValidationBehavior);
         }
     }
 }

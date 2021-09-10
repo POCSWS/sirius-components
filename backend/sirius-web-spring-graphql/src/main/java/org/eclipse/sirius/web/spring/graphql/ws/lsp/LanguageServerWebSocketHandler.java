@@ -18,7 +18,10 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.sirius.web.collaborative.api.services.IEditingContextEventProcessorRegistry;
+import org.eclipse.sirius.web.lsp.LspText;
 import org.eclipse.sirius.web.spring.graphql.ws.handlers.ConnectionTerminateMessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,119 +36,10 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import io.micrometer.core.instrument.MeterRegistry;
 
 /**
- * The entry point of the GraphQL Web Socket API.
- * <p>
- * This endpoint will be available on the /subscriptions path. Since the Web Socket API will not be used to retrieve
- * static resources, the path will not be prefixed by an API prefix. As such, users will be able to send GraphQL
- * queries, mutations and subscriptions to the following URL:
- * </p>
+ * {@link TextWebSocketHandler} implementation for handling web socket sessions used for {@link LspText}
+ * representations.
  *
- * <pre>
- * PROTOCOL://DOMAIN.TLD(:PORT)/subscriptions
- * </pre>
- *
- * <p>
- * In a development environment, the URL will most likely be:
- * </p>
- *
- * <pre>
- * ws://localhost:8080/subscriptions
- * </pre>
- *
- * <p>
- * During the initial handshake, clients have to indicate that they will use the "graphql-ws" Web Socket subprotocol.
- * See http://tools.ietf.org/html/rfc6455#section-1.9 for additional information on this subprotocol support.
- * </p>
- *
- * <p>
- * Once the connection has been established, users can send an initial request to ensure that the server is up and ready
- * to handle their GraphQL requests:
- * </p>
- *
- * <pre>
- * {
- *   "type": "connection_init"
- * }
- * </pre>
- *
- * <p>
- * The server will respond with an acknowledgment to let the user know that they can start sending requests.
- * </p>
- *
- * <pre>
- * {
- *   "type": "connection_ack"
- * }
- * </pre>
- *
- * <p>
- * GraphQL queries, mutations and subscriptions can be sent using a JSON object with the following content. The user is
- * responsible for the selection of the identifier. Thanks to this identifier, they will be able to figure out which
- * result matches a given request.
- * </p>
- *
- * <pre>
- * {
- *   "type": "start",
- *   "id": "ThisIsMyIdentifierUsedToRetrieveMyData"
- *   "payload": {
- *     "query": "...",
- *     "variables": {
- *       "key": "value"
- *     },
- *     "operationName": "..."
- *   }
- * }
- * </pre>
- *
- * <p>
- * In case of a subscription, at least one response will be returned to confirmed the subscription with the following
- * structure:
- * </p>
- *
- * <pre>
- * {
- *   "type": "data",
- *   "id": "..."
- * }
- * </pre>
- *
- * <p>
- * This response gives the users the identifier of their subscription. After that, the results of the execution of the
- * subscription will be returned using the following JSON data structure. The same structure will be used to return
- * results for a query or a mutation.
- * </p>
- *
- * <pre>
- * {
- *   "type": "data",
- *   "id": "...",
- *   "payload": {
- *     "data": { ... },
- *     "errors": [
- *       { ... }
- *     ]
- *   }
- * }
- * </pre>
- *
- * <p>
- * In order to unsubscribe, users should send a stop request using the identifier retrieved from the response.
- * </p>
- *
- * <pre>
- * {
- *   "type": "stop",
- *   "id": "..."
- * }
- * </pre>
- *
- * <p>
- * The server will confirm the unsubscription thanks an acknowledgment response too. On top of that, the server may send
- * a keep alive response from time to time to prevent the client from terminating the connection.
- * </p>
- *
- * @author sbegaudeau
+ * @author flatombe
  */
 public class LanguageServerWebSocketHandler extends TextWebSocketHandler {
 
@@ -163,9 +57,11 @@ public class LanguageServerWebSocketHandler extends TextWebSocketHandler {
 
     private final Logger logger = LoggerFactory.getLogger(LanguageServerWebSocketHandler.class);
 
-    private final Map<WebSocketSession, LanguageServerRuntime> languageServerRuntimeByWebSocketSession = new HashMap<>();
+    private final Map<WebSocketSession, LanguageServerRuntime> languageServerRuntimeByWebSocketSession = new ConcurrentHashMap<>();
 
     private final ObjectMapper objectMapper;
+
+    private final IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry;
 
     // private final Map<WebSocketSession, List<SubscriptionEntry>> sessions2entries = new ConcurrentHashMap<>();
 
@@ -181,11 +77,12 @@ public class LanguageServerWebSocketHandler extends TextWebSocketHandler {
     //
     // private final Counter connectionErrorCounter;
 
-    // private final MeterRegistry meterRegistry;
+    private final MeterRegistry meterRegistry;
 
-    public LanguageServerWebSocketHandler(ObjectMapper objectMapper, MeterRegistry meterRegistry) {
+    public LanguageServerWebSocketHandler(ObjectMapper objectMapper, MeterRegistry meterRegistry, IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry) {
         this.objectMapper = Objects.requireNonNull(objectMapper);
-        // this.meterRegistry = Objects.requireNonNull(meterRegistry);
+        this.meterRegistry = Objects.requireNonNull(meterRegistry);
+        this.editingContextEventProcessorRegistry = Objects.requireNonNull(editingContextEventProcessorRegistry);
 
 //         @formatter:off
 //        this.startMessageCounter = Counter.builder(COUNTER_METRIC_NAME)
@@ -220,14 +117,22 @@ public class LanguageServerWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        Principal principal = session.getPrincipal();
+        if (principal instanceof Authentication) {
+            SecurityContextHolder.setContext(new SecurityContextImpl((Authentication) principal));
+        }
+
         // TODO: for now we maintain one LS per WebSocketSession.
-        final LanguageServerRuntime languageServerRuntime = this.languageServerRuntimeByWebSocketSession.computeIfAbsent(session, LanguageServerRuntime::new);
+        this.logger.info("[{}]Retrieving/creating LanguageServerRuntime", session.getId()); //$NON-NLS-1$
+        final LanguageServerRuntime languageServerRuntime = this.languageServerRuntimeByWebSocketSession.computeIfAbsent(session,
+                (webSocketSession) -> new LanguageServerRuntime(webSocketSession, this.editingContextEventProcessorRegistry));
         languageServerRuntime.forwardMessage(message);
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        this.logger.info("LSWSHandler.afterConnectionClosed" + session.toString()); //$NON-NLS-1$
+        this.logger.info("[{}]afterConnectionClosed {}", session.getId(), status.getReason()); //$NON-NLS-1$
+
         Principal principal = session.getPrincipal();
         if (principal instanceof Authentication) {
             SecurityContextHolder.setContext(new SecurityContextImpl((Authentication) principal));

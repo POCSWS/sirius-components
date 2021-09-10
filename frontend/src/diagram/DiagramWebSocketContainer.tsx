@@ -579,6 +579,7 @@ export const DiagramWebSocketContainer = ({
     fetchPolicy: 'no-cache',
     skip: diagramWebSocketContainer !== 'ready',
     onSubscriptionData: ({ subscriptionData }) => {
+      console.log('DiagramWebSocketContainer.onSubscriptionData');
       if (subscriptionData?.data) {
         const { diagramEvent } = subscriptionData.data;
         if (diagramEvent.__typename === 'DiagramRefreshedEventPayload') {
@@ -600,6 +601,7 @@ export const DiagramWebSocketContainer = ({
       }
     },
     onSubscriptionComplete: () => {
+      console.log('DiagramWebSocketContainer.onSubscriptionComplete');
       dispatch({ type: 'HANDLE_COMPLETE' });
     },
   });

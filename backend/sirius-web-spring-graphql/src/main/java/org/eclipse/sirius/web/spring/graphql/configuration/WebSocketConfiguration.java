@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Objects;
 
+import org.eclipse.sirius.web.collaborative.api.services.IEditingContextEventProcessorRegistry;
 import org.eclipse.sirius.web.spring.graphql.api.URLConstants;
 import org.eclipse.sirius.web.spring.graphql.ws.GraphQLWebSocketHandler;
 import org.eclipse.sirius.web.spring.graphql.ws.lsp.LanguageServerWebSocketHandler;
@@ -51,11 +52,15 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
 
     private final MeterRegistry meterRegistry;
 
-    public WebSocketConfiguration(@Value("${sirius.web.graphql.websocket.allowed.origins}") String allowedOrigins, GraphQL graphQL, ObjectMapper objectMapper, MeterRegistry meterRegistry) {
+    private final IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry;
+
+    public WebSocketConfiguration(@Value("${sirius.web.graphql.websocket.allowed.origins}") String allowedOrigins, GraphQL graphQL, ObjectMapper objectMapper, MeterRegistry meterRegistry,
+            IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry) {
         this.allowedOrigins = Objects.requireNonNull(allowedOrigins);
         this.graphQL = Objects.requireNonNull(graphQL);
         this.objectMapper = Objects.requireNonNull(objectMapper);
         this.meterRegistry = Objects.requireNonNull(meterRegistry);
+        this.editingContextEventProcessorRegistry = Objects.requireNonNull(editingContextEventProcessorRegistry);
     }
 
     @Override
@@ -64,9 +69,9 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
         WebSocketHandlerRegistration graphQLWebSocketRegistration = registry.addHandler(graphQLWebSocketHandler, URLConstants.GRAPHQL_SUBSCRIPTION_PATH);
         graphQLWebSocketRegistration.setAllowedOrigins(this.allowedOrigins);
 
-        LanguageServerWebSocketHandler languageServerWebSocketHandler = new LanguageServerWebSocketHandler(this.objectMapper, this.meterRegistry);
+        LanguageServerWebSocketHandler languageServerWebSocketHandler = new LanguageServerWebSocketHandler(this.objectMapper, this.meterRegistry, this.editingContextEventProcessorRegistry);
         // TODO: hardcoded statemachine path.
-        WebSocketHandlerRegistration languageServerWebSocketRegistration = registry.addHandler(languageServerWebSocketHandler, "/language-servers/statemachine"); //$NON-NLS-1$
+        WebSocketHandlerRegistration languageServerWebSocketRegistration = registry.addHandler(languageServerWebSocketHandler, "/language-servers/statemachine/*"); //$NON-NLS-1$
         languageServerWebSocketRegistration.setAllowedOrigins(this.allowedOrigins);
     }
 

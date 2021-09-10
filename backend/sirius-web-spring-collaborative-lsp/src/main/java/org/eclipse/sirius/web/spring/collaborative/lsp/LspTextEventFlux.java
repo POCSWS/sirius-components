@@ -45,6 +45,7 @@ public class LspTextEventFlux {
     }
 
     public void lspTextRefreshed(IInput input, LspText newLspText) {
+        this.logger.info("LspTextEventFlux.tryEmitNextRefreshedEventPayload"); //$NON-NLS-1$
         this.currentLspText = newLspText;
         EmitResult emitResult = this.sink.tryEmitNext(new LspTextRefreshedEventPayload(input.getId(), this.currentLspText));
         if (emitResult.isFailure()) {
@@ -59,6 +60,7 @@ public class LspTextEventFlux {
     }
 
     public void dispose() {
+        this.logger.info("LspTextEventFlux.tryEmitComplete"); //$NON-NLS-1$
         EmitResult emitResult = this.sink.tryEmitComplete();
         if (emitResult.isFailure()) {
             String pattern = "An error has occurred while marking the publisher as complete: {}"; //$NON-NLS-1$
