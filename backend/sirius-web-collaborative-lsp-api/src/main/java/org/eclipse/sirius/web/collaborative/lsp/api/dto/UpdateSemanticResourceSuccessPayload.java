@@ -34,12 +34,9 @@ public final class UpdateSemanticResourceSuccessPayload implements IPayload {
 
     private final String editingContextId;
 
-    private final String updatedSemanticResourceId;
-
-    public UpdateSemanticResourceSuccessPayload(UUID id, String editingContextId, String updatedSemanticResourceId) {
+    public UpdateSemanticResourceSuccessPayload(UUID id, String editingContextId) {
         this.id = Objects.requireNonNull(id);
         this.editingContextId = Objects.requireNonNull(editingContextId);
-        this.updatedSemanticResourceId = Objects.requireNonNull(updatedSemanticResourceId);
     }
 
     @Override
@@ -56,15 +53,9 @@ public final class UpdateSemanticResourceSuccessPayload implements IPayload {
         return this.editingContextId;
     }
 
-    @GraphQLField
-    @GraphQLNonNull
-    public String getUpdatedSemanticResourceId() {
-        return this.updatedSemanticResourceId;
-    }
-
     @Override
     public String toString() {
-        String pattern = "{0} '{'id: {1}, editingContextId: {2}, updatedSemanticResourceId: {3}'}'"; //$NON-NLS-1$
-        return MessageFormat.format(pattern, this.getClass().getSimpleName(), this.id, this.editingContextId, this.updatedSemanticResourceId);
+        String pattern = "{0} '{'id: {1}, editingContextId: {2}'}'"; //$NON-NLS-1$
+        return MessageFormat.format(pattern, this.getClass().getSimpleName(), this.id, this.editingContextId);
     }
 }

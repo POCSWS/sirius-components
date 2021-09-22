@@ -100,12 +100,12 @@ public class LanguageServerRuntime {
      *            session are headered and forwarded to {@link #getWebSocketOut()}.
      */
     public LanguageServerRuntime(WebSocketSession webSocketSession, IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry) {
-        final String path = webSocketSession.getUri().getPath();
-        final String lastSegment = path.substring(path.lastIndexOf('/') + 1);
-        final UUID editingContextId = UUID.fromString(lastSegment);
-
         this.session = Objects.requireNonNull(webSocketSession);
         Objects.requireNonNull(editingContextEventProcessorRegistry);
+
+        final UUID editingContextId = (UUID) webSocketSession.getAttributes().get("editingContextId"); //$NON-NLS-1$
+        final UUID representationId = (UUID) webSocketSession.getAttributes().get("representationId"); //$NON-NLS-1$
+
         try {
             this.languageServerIn.connect(this.webSocketOut);
         } catch (IOException ioException) {
@@ -126,7 +126,7 @@ public class LanguageServerRuntime {
             }
 
             if (issues.isEmpty()) {
-                editingContextEventProcessorRegistry.dispatchEvent(editingContextId, new UpdateSemanticResourceInput(resource));
+                editingContextEventProcessorRegistry.dispatchEvent(editingContextId, new UpdateSemanticResourceInput(resource, representationId));
             }
         };
         final Injector dslInjector = this.lspXtextHelper.getInjector().getInstance(CustomResourceServiceProviderServiceLoader.class).getInjector("StatemachineSiriusWebIdeSetup"); //$NON-NLS-1$

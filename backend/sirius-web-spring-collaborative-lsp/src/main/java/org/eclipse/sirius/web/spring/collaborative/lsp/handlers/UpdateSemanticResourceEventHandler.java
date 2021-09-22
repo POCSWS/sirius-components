@@ -12,10 +12,19 @@
  *******************************************************************************/
 package org.eclipse.sirius.web.spring.collaborative.lsp.handlers;
 
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
-import org.eclipse.emf.common.util.TreeIterator;
-import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.common.util.BasicMonitor;
+import org.eclipse.emf.compare.Comparison;
+import org.eclipse.emf.compare.Diff;
+import org.eclipse.emf.compare.EMFCompare;
+import org.eclipse.emf.compare.merge.BatchMerger;
+import org.eclipse.emf.compare.merge.IBatchMerger;
+import org.eclipse.emf.compare.merge.IMerger;
+import org.eclipse.emf.compare.scope.DefaultComparisonScope;
+import org.eclipse.emf.compare.scope.IComparisonScope;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -24,14 +33,17 @@ import org.eclipse.sirius.web.collaborative.api.services.ChangeKind;
 import org.eclipse.sirius.web.collaborative.api.services.EventHandlerResponse;
 import org.eclipse.sirius.web.collaborative.api.services.IEditingContextEventHandler;
 import org.eclipse.sirius.web.collaborative.api.services.Monitoring;
+import org.eclipse.sirius.web.collaborative.lsp.api.ILspTextContext;
+import org.eclipse.sirius.web.collaborative.lsp.api.ILspTextEventHandler;
+import org.eclipse.sirius.web.collaborative.lsp.api.ILspTextInput;
 import org.eclipse.sirius.web.collaborative.lsp.api.dto.UpdateSemanticResourceInput;
 import org.eclipse.sirius.web.collaborative.lsp.api.dto.UpdateSemanticResourceSuccessPayload;
 import org.eclipse.sirius.web.core.api.ErrorPayload;
-import org.eclipse.sirius.web.core.api.IEditService;
 import org.eclipse.sirius.web.core.api.IEditingContext;
-import org.eclipse.sirius.web.core.api.IInput;
 import org.eclipse.sirius.web.core.api.IObjectService;
 import org.eclipse.sirius.web.emf.services.EditingContext;
+import org.eclipse.sirius.web.lsp.LspText;
+import org.eclipse.sirius.web.services.api.representations.IRepresentationService;
 import org.eclipse.sirius.web.spring.collaborative.messages.ICollaborativeMessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +58,7 @@ import io.micrometer.core.instrument.MeterRegistry;
  * @author flatombe
  */
 @Service
-public class UpdateSemanticResourceEventHandler implements IEditingContextEventHandler {
+public class UpdateSemanticResourceEventHandler implements ILspTextEventHandler {
 
     private final Logger logger = LoggerFactory.getLogger(UpdateSemanticResourceEventHandler.class);
 
@@ -54,14 +66,14 @@ public class UpdateSemanticResourceEventHandler implements IEditingContextEventH
 
     private final IObjectService objectService;
 
-    private final IEditService editService;
+    private final IRepresentationService representationService;
 
     private final Counter counter;
 
-    public UpdateSemanticResourceEventHandler(ICollaborativeMessageService messageService, IObjectService objectService, IEditService editService, MeterRegistry meterRegistry) {
+    public UpdateSemanticResourceEventHandler(ICollaborativeMessageService messageService, IObjectService objectService, IRepresentationService representationService, MeterRegistry meterRegistry) {
         this.messageService = Objects.requireNonNull(messageService);
         this.objectService = Objects.requireNonNull(objectService);
-        this.editService = Objects.requireNonNull(editService);
+        this.representationService = Objects.requireNonNull(representationService);
 
         // @formatter:off
         this.counter = Counter.builder(Monitoring.EVENT_HANDLER)
@@ -71,65 +83,62 @@ public class UpdateSemanticResourceEventHandler implements IEditingContextEventH
     }
 
     @Override
-    public boolean canHandle(IInput input) {
+    public boolean canHandle(ILspTextInput input) {
         return input instanceof UpdateSemanticResourceInput;
     }
 
     @Override
-    public EventHandlerResponse handle(IEditingContext editingContext, IInput input) {
+    public EventHandlerResponse handle(IEditingContext editingContext, ILspTextContext lspTextContext, ILspTextInput input) {
         this.counter.increment();
 
         if (input instanceof UpdateSemanticResourceInput) {
             UpdateSemanticResourceInput updateSemanticResourceInput = (UpdateSemanticResourceInput) input;
 
-            // This Resource comes from the parsing of the LspText contents by the Xtext parser.
-            Resource parsedResource = updateSemanticResourceInput.getResource();
-
-            this.performMerge(editingContext, parsedResource);
+            this.handleSemanticResourceUpdate(editingContext, updateSemanticResourceInput.getResource(), lspTextContext.getLspText());
 
             return new EventHandlerResponse(new ChangeDescription(ChangeKind.SEMANTIC_CHANGE, editingContext.getId()),
-                    new UpdateSemanticResourceSuccessPayload(updateSemanticResourceInput.getId(), editingContext.getId().toString(), parsedResource.getURI().lastSegment()));
+                    new UpdateSemanticResourceSuccessPayload(updateSemanticResourceInput.getId(), editingContext.getId().toString()));
         }
         String message = this.messageService.invalidInput(input.getClass().getSimpleName(), UpdateSemanticResourceInput.class.getSimpleName());
         return new EventHandlerResponse(new ChangeDescription(ChangeKind.NOTHING, editingContext.getId()), new ErrorPayload(input.getId(), message));
     }
 
+    private void handleSemanticResourceUpdate(IEditingContext editingContext, Resource parsedResource, LspText lspText) {
+        // TODO: apparently we don't need the "representationId" attribute from WebSessionSocket.
+
+        this.logger.info("LspText {} targets {}" + lspText.getTargetObjectId()); //$NON-NLS-1$
+        final EObject targetObject = (EObject) this.objectService.getObject(editingContext, lspText.getTargetObjectId())
+                .orElseThrow(() -> new NoSuchElementException("Could not find object " + lspText.getTargetObjectId())); //$NON-NLS-1$
+        final ResourceSet resourceSetToUpdate = ((EditingContext) editingContext).getDomain().getResourceSet();
+        final Resource resourceToUpdate = resourceSetToUpdate.getResources().stream().filter(resource -> {
+            // Here we want to find the Resource containing the Target Object of the LspText representation
+            return targetObject.eResource().equals(resource);
+        }).findFirst().orElseThrow();
+
+        this.performMerge(resourceToUpdate, parsedResource);
+    }
+
     /**
-     * Merges a {@link Resource} into an {@link IEditingContext}.
+     * Performs the merge by accepting all changes.
      *
-     * @param editingContext
-     *            the (non-{@code null}) {@link IEditingContext}.
+     * @param resourceToUpdate
+     *            the (non-{@code null}) {@link Resource} to merge into.
      * @param parsedResource
      *            the (non-{@code null}) {@link Resource} to merge.
      */
-    private void performMerge(IEditingContext editingContext, Resource parsedResource) {
-        // Dependency to EMF. What would happen in non-EMF cases?
-        ResourceSet resourceSetToUpdate = ((EditingContext) editingContext).getDomain().getResourceSet();
+    private void performMerge(Resource resourceToUpdate, Resource parsedResource) {
+        final EMFCompare emfCompare = EMFCompare.builder().build();
+        final IComparisonScope comparisonScope = new DefaultComparisonScope(resourceToUpdate, parsedResource, null);
+        final Comparison comparison = emfCompare.compare(comparisonScope);
 
-        // devtime: there is only one for now.
-        final Resource resourceToUpdate = resourceSetToUpdate.getResources().get(0);
-        // TODO: how to find the right Resource? Maybe we can retrieve it based on the representationId that could be
-        // passed to us through UpdateModelInput?
-        // Or we need more infos from the frontend that would endup in the URI / WebSocketSession parameters.
-
-        this.logger.info("Merging {} into {}", parsedResource, resourceToUpdate); //$NON-NLS-1$
-
-        TreeIterator<EObject> iterator = resourceToUpdate.getAllContents();
-        while (iterator.hasNext()) {
-            final EObject eObjectToUpdate = iterator.next();
-            final String uriFragment = resourceToUpdate.getURIFragment(eObjectToUpdate);
-            final EObject newEObject = parsedResource.getEObject(uriFragment);
-            for (EAttribute eAttribute : eObjectToUpdate.eClass().getEAllAttributes()) {
-                eObjectToUpdate.eSet(eAttribute, newEObject.eGet(eAttribute));
-            }
+        // For now our policy is to merge all differences.
+        List<Diff> differences = comparison.getDifferences();
+        if (!differences.isEmpty()) {
+            this.logger.info("Merging {} differences with EMF Compare.", differences.size()); //$NON-NLS-1$
+            IMerger.Registry mergerRegistry = IMerger.RegistryImpl.createStandaloneInstance();
+            IBatchMerger merger = new BatchMerger(mergerRegistry);
+            merger.copyAllRightToLeft(differences, new BasicMonitor());
         }
-
-        // final URI deltaResourceUri = resource.getUri().trimFragment();
-        // resourceSetToUpdate.getURIConverter().getURIMap().put(deltaResourceUri, resourceToUpdate.getURI());
-        // EcoreUtil.replace(eObjectToUpdate, newEObject);
-        //
-        // resourceSetToUpdate.getURIConverter().getURIMap().remove(deltaResourceUri, resourceToUpdate.getURI());
-        // }
     }
 
 }

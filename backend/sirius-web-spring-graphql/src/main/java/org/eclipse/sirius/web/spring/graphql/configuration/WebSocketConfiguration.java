@@ -14,7 +14,9 @@ package org.eclipse.sirius.web.spring.graphql.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 import org.eclipse.sirius.web.collaborative.api.services.IEditingContextEventProcessorRegistry;
 import org.eclipse.sirius.web.spring.graphql.api.URLConstants;
@@ -23,10 +25,14 @@ import org.eclipse.sirius.web.spring.graphql.ws.lsp.LanguageServerWebSocketHandl
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistration;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.web.socket.server.HandshakeInterceptor;
 import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
 import graphql.GraphQL;
@@ -71,8 +77,35 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
 
         LanguageServerWebSocketHandler languageServerWebSocketHandler = new LanguageServerWebSocketHandler(this.objectMapper, this.meterRegistry, this.editingContextEventProcessorRegistry);
         // TODO: hardcoded statemachine path.
-        WebSocketHandlerRegistration languageServerWebSocketRegistration = registry.addHandler(languageServerWebSocketHandler, "/language-servers/statemachine/*"); //$NON-NLS-1$
+        WebSocketHandlerRegistration languageServerWebSocketRegistration = registry.addHandler(languageServerWebSocketHandler, "/language-servers/statemachine/*/*") //$NON-NLS-1$
+                .addInterceptors(this.createLanguageServerWebSocketInterceptor());
         languageServerWebSocketRegistration.setAllowedOrigins(this.allowedOrigins);
+    }
+
+    @Bean
+    public HandshakeInterceptor createLanguageServerWebSocketInterceptor() {
+        return new HandshakeInterceptor() {
+            @Override
+            public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
+                // URI of the WebSocketSession should look like "xxx://dsl/editingContextId/representationId".
+                final String path = request.getURI().getPath();
+                final String lastSegment = path.substring(path.lastIndexOf('/') + 1);
+                final String pathWithoutLastSegment = path.substring(0, path.lastIndexOf('/'));
+                final String segmentBeforeLastSegment = pathWithoutLastSegment.substring(pathWithoutLastSegment.lastIndexOf('/') + 1);
+
+                final UUID editingContextId = UUID.fromString(segmentBeforeLastSegment);
+                final UUID representationId = UUID.fromString(lastSegment);
+
+                attributes.put("editingContextId", editingContextId); //$NON-NLS-1$
+                attributes.put("representationId", representationId); //$NON-NLS-1$
+                return true;
+            }
+
+            @Override
+            public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
+                // Nothing to do after handshake
+            }
+        };
     }
 
     @Bean

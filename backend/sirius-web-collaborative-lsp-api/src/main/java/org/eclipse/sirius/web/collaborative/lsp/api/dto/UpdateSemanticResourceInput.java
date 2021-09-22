@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.sirius.web.annotations.graphql.GraphQLField;
 import org.eclipse.sirius.web.annotations.graphql.GraphQLID;
 import org.eclipse.sirius.web.annotations.graphql.GraphQLNonNull;
+import org.eclipse.sirius.web.collaborative.lsp.api.ILspTextInput;
 import org.eclipse.sirius.web.core.api.IInput;
 import org.eclipse.sirius.web.lsp.LspText;
 
@@ -29,15 +30,18 @@ import org.eclipse.sirius.web.lsp.LspText;
  *
  * @author flatombe
  */
-public final class UpdateSemanticResourceInput implements IInput {
+public final class UpdateSemanticResourceInput implements ILspTextInput {
 
     private UUID id;
 
     private final Resource resource;
 
-    public UpdateSemanticResourceInput(Resource resource) {
+    private final UUID representationId;
+
+    public UpdateSemanticResourceInput(Resource resource, UUID representationId) {
         this.id = UUID.randomUUID();
         this.resource = Objects.requireNonNull(resource);
+        this.representationId = Objects.requireNonNull(representationId);
     }
 
     @Override
@@ -54,8 +58,22 @@ public final class UpdateSemanticResourceInput implements IInput {
      * @return the (non-{@code null}) semantic {@link Resource} resulting from parsing the {@link LspText}
      *         representation.
      */
+    @GraphQLField
+    @GraphQLNonNull
     public Resource getResource() {
         return this.resource;
+    }
+
+    /**
+     * The {@link UUID} of the representation.
+     *
+     * @return the (non-{@code null}) {@link UUID} of the representation that triggered this change.
+     */
+    @Override
+    @GraphQLField
+    @GraphQLNonNull
+    public UUID getRepresentationId() {
+        return this.representationId;
     }
 
     @Override
