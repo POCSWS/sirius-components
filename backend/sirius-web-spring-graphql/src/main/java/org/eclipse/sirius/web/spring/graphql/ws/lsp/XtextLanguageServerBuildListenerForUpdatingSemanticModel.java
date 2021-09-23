@@ -35,6 +35,7 @@ import org.springframework.web.socket.WebSocketSession;
  *
  * @author flatombe
  */
+@Deprecated
 public class XtextLanguageServerBuildListenerForUpdatingSemanticModel implements IBuildListener {
     private final Logger logger = LoggerFactory.getLogger(XtextLanguageServerBuildListenerForUpdatingSemanticModel.class);
 

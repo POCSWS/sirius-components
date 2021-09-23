@@ -63,7 +63,7 @@ public class LspXtextHelper {
             this.bind(IContainer.Manager.class).to(ProjectDescriptionBasedContainerManager.class);
 
             // Binding our own custom implementations.
-            this.bind(LanguageServer.class).to(LanguageServerImplWithCustomBuildListeners.class);
+            this.bind(LanguageServer.class).to(SiriusWebLanguageServerImpl.class);
             this.bind(IResourceValidator.class).to(StatemachineResourceValidator.class);
             this.bind(IResourceServiceProvider.Registry.class).toProvider(CustomResourceServiceProviderServiceLoader.class).asEagerSingleton();
         }
@@ -94,7 +94,7 @@ public class LspXtextHelper {
         Objects.requireNonNull(languageServerIn);
         Objects.requireNonNull(languageServerOut);
 
-        final LanguageServerImplWithCustomBuildListeners xtextLanguageServer = this.getInjector().getInstance(LanguageServerImplWithCustomBuildListeners.class);
+        final SiriusWebLanguageServerImpl xtextLanguageServer = this.getInjector().getInstance(SiriusWebLanguageServerImpl.class);
 
         final ExecutorService executorService = Executors.newCachedThreadPool();
         final Function<MessageConsumer, MessageConsumer> wrapper = consumer -> consumer;
