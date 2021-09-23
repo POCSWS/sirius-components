@@ -24,7 +24,6 @@ import org.eclipse.xtext.resource.ResourceServiceProviderServiceLoader;
 import org.eclipse.xtext.resource.impl.ResourceServiceProviderRegistryImpl;
 
 import com.google.inject.Injector;
-import com.google.inject.Singleton;
 
 import fr.obeo.dsl.designer.sample.ide.StatemachineIdeSetup;
 
@@ -34,19 +33,18 @@ import fr.obeo.dsl.designer.sample.ide.StatemachineIdeSetup;
  *
  * @author flatombe
  */
-@Singleton
-public class CustomResourceServiceProviderServiceLoader extends ResourceServiceProviderServiceLoader {
+public class ResourceServiceProviderServiceLoaderWithOverride extends ResourceServiceProviderServiceLoader {
 	private final ServiceLoader<ISetup> setupLoader = ServiceLoader.load(ISetup.class);
 
 	/**
 	 * We need this map to remember all the Guice modules instantiated reflexively
 	 * by this registry, so we can retrieve some of their instances later on.
 	 */
-	private final Map<String, Injector> injectors = new LinkedHashMap<>();
+	private final Map<Class<? extends ISetup>, Injector> setupInjectors = new LinkedHashMap<>();
 
 	private final Registry loadedRegistry = this.loadRegistry();
 
-	public CustomResourceServiceProviderServiceLoader() {
+	public ResourceServiceProviderServiceLoaderWithOverride() {
 	}
 
 	private Registry loadRegistry() {
@@ -83,13 +81,13 @@ public class CustomResourceServiceProviderServiceLoader extends ResourceServiceP
 
 			// TODO: this is a hack to hopefully have access to the right instance of our
 			// custom IResourceValidator.
-			injectors.put(cp.getClass().getSimpleName(), injector);
+			setupInjectors.put(cp.getClass(), injector);
 		}
 		return registry;
 	}
 
-	public Injector getInjector(String moduleSetupClassName) {
-		return this.injectors.get(moduleSetupClassName);
+	public Injector getInjector(Class<? extends ISetup> setupClass) {
+		return this.setupInjectors.get(setupClass);
 	}
 
 	@Override

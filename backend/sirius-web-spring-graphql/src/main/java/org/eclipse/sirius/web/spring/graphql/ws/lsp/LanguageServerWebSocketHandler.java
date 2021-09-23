@@ -122,8 +122,7 @@ public class LanguageServerWebSocketHandler extends TextWebSocketHandler {
             SecurityContextHolder.setContext(new SecurityContextImpl((Authentication) principal));
         }
 
-        // TODO: for now we maintain one LS per WebSocketSession.
-        this.logger.info("[{}]Retrieving/creating LanguageServerRuntime", session.getId()); //$NON-NLS-1$
+        // TODO: For now we maintain one LS per WebSocketSession.
         final LanguageServerRuntime languageServerRuntime = this.languageServerRuntimeByWebSocketSession.computeIfAbsent(session,
                 (webSocketSession) -> new LanguageServerRuntime(webSocketSession, this.editingContextEventProcessorRegistry));
         languageServerRuntime.forwardMessage(message);

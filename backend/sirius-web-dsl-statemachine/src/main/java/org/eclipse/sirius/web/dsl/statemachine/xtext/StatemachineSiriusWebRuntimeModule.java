@@ -1,10 +1,6 @@
 package org.eclipse.sirius.web.dsl.statemachine.xtext;
 
-import org.eclipse.xtext.IGrammarAccess;
-import org.eclipse.xtext.resource.IResourceServiceProvider.Registry;
 import org.eclipse.xtext.validation.IResourceValidator;
-
-import com.google.inject.Binder;
 
 import fr.obeo.dsl.designer.sample.StatemachineRuntimeModule;
 
@@ -21,23 +17,10 @@ public class StatemachineSiriusWebRuntimeModule extends StatemachineRuntimeModul
 		super();
 	}
 
-	@Override
-	public void configure(Binder binder) {
-		super.configure(binder);
-	}
-
-
-	@Override
-	public Registry bindIResourceServiceProvider$Registry() {
-		return super.bindIResourceServiceProvider$Registry();
-	}
-
+	/**
+	 * This binding gets picked up reflexively thanks to the method name.
+	 */
 	public Class<? extends IResourceValidator> bindIResourceValidator() {
 		return StatemachineResourceValidator.class;
-	}
-
-	@Override
-	public Class<? extends IGrammarAccess> bindIGrammarAccess() {
-		return super.bindIGrammarAccess();
 	}
 }

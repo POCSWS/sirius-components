@@ -12,8 +12,6 @@
  *******************************************************************************/
 package org.eclipse.sirius.web.spring.graphql.ws.lsp;
 
-import com.google.inject.Injector;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -21,18 +19,18 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
-import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.sirius.web.collaborative.api.services.IEditingContextEventProcessorRegistry;
 import org.eclipse.sirius.web.collaborative.lsp.api.dto.UpdateSemanticResourceInput;
-import org.eclipse.sirius.web.dsl.statemachine.xtext.CustomResourceServiceProviderServiceLoader;
+import org.eclipse.sirius.web.core.api.IInput;
+import org.eclipse.sirius.web.core.api.IPayload;
 import org.eclipse.sirius.web.dsl.statemachine.xtext.StatemachineResourceValidator;
 import org.eclipse.sirius.web.dsl.statemachine.xtext.StatemachineResourceValidator.PostResourceValidationBehavior;
+import org.eclipse.sirius.web.dsl.statemachine.xtext.StatemachineSiriusWebIdeSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -51,14 +49,11 @@ import org.springframework.web.socket.WebSocketSession;
 public class LanguageServerRuntime {
     private final Logger logger = LoggerFactory.getLogger(LanguageServerRuntime.class);
 
-    private final Collection<Consumer<String>> responseListeners = new LinkedHashSet<>();
+    private final PostResourceValidationBehavior postValidationBehavior;
 
-    private PostResourceValidationBehavior postValidationBehavior;
-
-    // TODO: for now we launch a Language Server per WebSocketSession.
     private final WebSocketSession session;
 
-    private final LspXtextHelper lspXtextHelper;
+    private final StatemachineResourceValidator resourceValidator;
 
     // Messages received by the WebSocket will be accessible via this stream.
     private final PipedOutputStream webSocketOut = new PipedOutputStream();
@@ -98,10 +93,14 @@ public class LanguageServerRuntime {
      * @param webSocketSession
      *            the (non-{@code null}) {@link WebSocketSession}. It is expected that all messages received for this
      *            session are headered and forwarded to {@link #getWebSocketOut()}.
+     * @param editingContextEventProcessorRegistry
+     *            the (non-{@code null}) {@link IEditingContextEventProcessorRegistry}.
      */
     public LanguageServerRuntime(WebSocketSession webSocketSession, IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry) {
         this.session = Objects.requireNonNull(webSocketSession);
         Objects.requireNonNull(editingContextEventProcessorRegistry);
+
+        this.logger.info("[{}]Instantiating LSRuntime", webSocketSession.getId()); //$NON-NLS-1$
 
         final UUID editingContextId = (UUID) webSocketSession.getAttributes().get("editingContextId"); //$NON-NLS-1$
         final UUID representationId = (UUID) webSocketSession.getAttributes().get("representationId"); //$NON-NLS-1$
@@ -111,14 +110,9 @@ public class LanguageServerRuntime {
         } catch (IOException ioException) {
             throw new RuntimeException(ioException);
         }
-        this.lspXtextHelper = new LspXtextHelper();
-        LanguageServer xtextLanguageServer = this.lspXtextHelper.startXtextLanguageServer(this.session.getId(), this.languageServerIn, this.languageServerOut);
 
-        // With this build listener, we will have a chance to react after every build.
-        // What we want to do is if the build was successful, then update the model contents.
-        // languageServer.addCustomBuildListener(new
-        // XtextLanguageServerBuildListenerForUpdatingSemanticModel(webSocketSession,
-        // editingContextEventProcessorRegistry));
+        final XtextLanguageServerModuleWrapper xtextLanguageServerModuleWrapper = new XtextLanguageServerModuleWrapper();
+
         this.postValidationBehavior = (issues, resource) -> {
             Principal principal = this.session.getPrincipal();
             if (principal instanceof Authentication) {
@@ -126,11 +120,19 @@ public class LanguageServerRuntime {
             }
 
             if (issues.isEmpty()) {
-                editingContextEventProcessorRegistry.dispatchEvent(editingContextId, new UpdateSemanticResourceInput(resource, representationId));
+                // When the textual representation parses into a valid model, we want to update the semantic model (and
+                // also other representations).
+                final IInput input = new UpdateSemanticResourceInput(resource, representationId);
+                this.logger.info("Validation successful, dispatching event " + input.toString()); //$NON-NLS-1$
+                Optional<IPayload> maybeEventResult = editingContextEventProcessorRegistry.dispatchEvent(editingContextId, input);
+                this.logger.info("Event dispatch resulting payload: " + maybeEventResult.map(Object::toString)); //$NON-NLS-1$
             }
         };
-        final Injector dslInjector = this.lspXtextHelper.getInjector().getInstance(CustomResourceServiceProviderServiceLoader.class).getInjector("StatemachineSiriusWebIdeSetup"); //$NON-NLS-1$
-        dslInjector.getInstance(StatemachineResourceValidator.class).addPostValidationBehavior(this.postValidationBehavior);
+        this.resourceValidator = xtextLanguageServerModuleWrapper.getSetupInjector(StatemachineSiriusWebIdeSetup.class).orElseThrow().getInstance(StatemachineResourceValidator.class);
+        this.resourceValidator.addPostValidationBehavior(this.postValidationBehavior);
+
+        LanguageServer xtextLanguageServer = XtextLanguageServerHelper.startXtextLanguageServer(
+                xtextLanguageServerModuleWrapper.getServerModuleInjector().getInstance(SiriusWebLanguageServerImpl.class), this.session.getId(), this.languageServerIn, this.languageServerOut);
     }
 
     /**
@@ -167,8 +169,7 @@ public class LanguageServerRuntime {
         } catch (IOException ioException) {
             throw new RuntimeException(ioException);
         } finally {
-            final Injector dslInjector = this.lspXtextHelper.getInjector().getInstance(CustomResourceServiceProviderServiceLoader.class).getInjector("StatemachineSiriusWebIdeSetup"); //$NON-NLS-1$
-            dslInjector.getInstance(StatemachineResourceValidator.class).removePostValidationBehavior(this.postValidationBehavior);
+            this.resourceValidator.removePostValidationBehavior(this.postValidationBehavior);
         }
     }
 }

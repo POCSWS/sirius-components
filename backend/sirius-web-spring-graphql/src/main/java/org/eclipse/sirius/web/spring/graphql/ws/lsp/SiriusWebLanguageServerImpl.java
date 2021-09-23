@@ -12,6 +12,8 @@
  *******************************************************************************/
 package org.eclipse.sirius.web.spring.graphql.ws.lsp;
 
+import com.google.inject.Singleton;
+
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.InitializeParams;
@@ -32,6 +34,7 @@ import org.eclipse.xtext.ide.server.LanguageServerImpl;
  *
  * @author flatombe
  */
+@Singleton
 public class SiriusWebLanguageServerImpl extends LanguageServerImpl {
 
     public SiriusWebLanguageServerImpl() {
