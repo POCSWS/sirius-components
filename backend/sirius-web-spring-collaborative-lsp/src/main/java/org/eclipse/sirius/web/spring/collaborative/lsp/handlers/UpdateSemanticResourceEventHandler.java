@@ -12,10 +12,13 @@
  *******************************************************************************/
 package org.eclipse.sirius.web.spring.collaborative.lsp.handlers;
 
+import java.util.Enumeration;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Diff;
@@ -106,7 +109,7 @@ public class UpdateSemanticResourceEventHandler implements ILspTextEventHandler 
     private void handleSemanticResourceUpdate(IEditingContext editingContext, Resource parsedResource, LspText lspText) {
         // TODO: apparently we don't need the "representationId" attribute from WebSessionSocket.
 
-        this.logger.info("LspText {} targets {}" + lspText.getTargetObjectId()); //$NON-NLS-1$
+        this.logger.info("LspText {} targets {}", lspText.getId(), lspText.getTargetObjectId()); //$NON-NLS-1$
         final EObject targetObject = (EObject) this.objectService.getObject(editingContext, lspText.getTargetObjectId())
                 .orElseThrow(() -> new NoSuchElementException("Could not find object " + lspText.getTargetObjectId())); //$NON-NLS-1$
         final ResourceSet resourceSetToUpdate = ((EditingContext) editingContext).getDomain().getResourceSet();
@@ -128,6 +131,10 @@ public class UpdateSemanticResourceEventHandler implements ILspTextEventHandler 
      */
     private void performMerge(Resource resourceToUpdate, Resource parsedResource) {
         final EMFCompare emfCompare = EMFCompare.builder().build();
+
+        // By default, EMFCompare spills quite a few INFOs we do not care about in our context.
+        doNotShowLog4jLoggerInfos();
+
         final IComparisonScope comparisonScope = new DefaultComparisonScope(resourceToUpdate, parsedResource, null);
         final Comparison comparison = emfCompare.compare(comparisonScope);
 
@@ -138,6 +145,15 @@ public class UpdateSemanticResourceEventHandler implements ILspTextEventHandler 
             IMerger.Registry mergerRegistry = IMerger.RegistryImpl.createStandaloneInstance();
             IBatchMerger merger = new BatchMerger(mergerRegistry);
             merger.copyAllRightToLeft(differences, new BasicMonitor());
+        }
+    }
+
+    private static void doNotShowLog4jLoggerInfos() {
+        @SuppressWarnings("unchecked")
+        final Enumeration<org.apache.log4j.Logger> allLoggers = LogManager.getCurrentLoggers();
+        while (allLoggers.hasMoreElements()) {
+            org.apache.log4j.Logger logger = allLoggers.nextElement();
+            logger.setLevel(Level.WARN);
         }
     }
 
