@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 import org.eclipse.lsp4j.services.LanguageServer;
-import org.eclipse.sirius.web.dsl.statemachine.xtext.ResourceServiceProviderServiceLoaderWithOverride;
+import org.eclipse.sirius.web.dsl.StaticRegistryProvider;
 import org.eclipse.sirius.web.dsl.statemachine.xtext.StatemachineResourceValidator;
 import org.eclipse.xtext.ISetup;
 import org.eclipse.xtext.ide.ExecutorServiceProvider;
@@ -58,7 +58,7 @@ public class XtextLanguageServerModuleWrapper {
             // Binding our own custom implementations.
             this.bind(LanguageServer.class).to(SiriusWebLanguageServerImpl.class);
             this.bind(IResourceValidator.class).to(StatemachineResourceValidator.class);
-            this.bind(IResourceServiceProvider.Registry.class).toProvider(ResourceServiceProviderServiceLoaderWithOverride.class).asEagerSingleton();
+            this.bind(IResourceServiceProvider.Registry.class).toProvider(StaticRegistryProvider.class).asEagerSingleton();
         }
     };
 
@@ -79,6 +79,6 @@ public class XtextLanguageServerModuleWrapper {
     }
 
     public Optional<Injector> getSetupInjector(Class<? extends ISetup> setupClass) {
-        return Optional.ofNullable(this.getServerModuleInjector().getInstance(ResourceServiceProviderServiceLoaderWithOverride.class).getInjector(setupClass));
+        return Optional.ofNullable(this.getServerModuleInjector().getInstance(StaticRegistryProvider.class).getInjector(setupClass));
     }
 }
