@@ -97,16 +97,33 @@ public class UpdateSemanticResourceEventHandler implements ILspTextEventHandler 
         if (input instanceof UpdateSemanticResourceInput) {
             UpdateSemanticResourceInput updateSemanticResourceInput = (UpdateSemanticResourceInput) input;
 
-            this.handleSemanticResourceUpdate(editingContext, updateSemanticResourceInput.getResource(), lspTextContext.getLspText());
+            final boolean updateResultedInSemanticChanges = this.handleSemanticResourceUpdate(editingContext, updateSemanticResourceInput.getResource(), lspTextContext.getLspText());
+            final String changeKind;
+            if (updateResultedInSemanticChanges) {
+                changeKind = ChangeKind.SEMANTIC_CHANGE;
+            } else {
+                changeKind = ChangeKind.NOTHING;
+            }
 
-            return new EventHandlerResponse(new ChangeDescription(ChangeKind.SEMANTIC_CHANGE, editingContext.getId()),
+            return new EventHandlerResponse(new ChangeDescription(changeKind, editingContext.getId()),
                     new UpdateSemanticResourceSuccessPayload(updateSemanticResourceInput.getId(), editingContext.getId().toString()));
         }
         String message = this.messageService.invalidInput(input.getClass().getSimpleName(), UpdateSemanticResourceInput.class.getSimpleName());
         return new EventHandlerResponse(new ChangeDescription(ChangeKind.NOTHING, editingContext.getId()), new ErrorPayload(input.getId(), message));
     }
 
-    private void handleSemanticResourceUpdate(IEditingContext editingContext, Resource parsedResource, LspText lspText) {
+    /**
+     * Performs the actual behavior resulting from receiving an {@link UpdateSemanticResourceInput}.
+     *
+     * @param editingContext
+     *            the (non-{@code null}) {@link IEditingContext}.
+     * @param parsedResource
+     *            the (non-{@code null}) {@link Resource} as parsed by the Language Server.
+     * @param lspText
+     *            the (non-{@code null}) {@link LspText} to update.
+     * @return {@code true} if any semantic changes were merged into the {@link LspText}. {@code false} otherwise.
+     */
+    private boolean handleSemanticResourceUpdate(IEditingContext editingContext, Resource parsedResource, LspText lspText) {
         // TODO: apparently we don't need the "representationId" attribute from WebSessionSocket.
 
         this.logger.info("LspText {} targets {}", lspText.getId(), lspText.getTargetObjectId()); //$NON-NLS-1$
@@ -118,7 +135,7 @@ public class UpdateSemanticResourceEventHandler implements ILspTextEventHandler 
             return targetObject.eResource().equals(resource);
         }).findFirst().orElseThrow();
 
-        this.performMerge(resourceToUpdate, parsedResource);
+        return this.performMerge(resourceToUpdate, parsedResource) > 0;
     }
 
     /**
@@ -128,8 +145,9 @@ public class UpdateSemanticResourceEventHandler implements ILspTextEventHandler 
      *            the (non-{@code null}) {@link Resource} to merge into.
      * @param parsedResource
      *            the (non-{@code null}) {@link Resource} to merge.
+     * @return the (positive) number of differences merged.
      */
-    private void performMerge(Resource resourceToUpdate, Resource parsedResource) {
+    private int performMerge(Resource resourceToUpdate, Resource parsedResource) {
         final EMFCompare emfCompare = EMFCompare.builder().build();
 
         // By default, EMFCompare spills quite a few INFOs we do not care about in our context.
@@ -146,6 +164,7 @@ public class UpdateSemanticResourceEventHandler implements ILspTextEventHandler 
             IBatchMerger merger = new BatchMerger(mergerRegistry);
             merger.copyAllRightToLeft(differences, new BasicMonitor());
         }
+        return differences.size();
     }
 
     private static void doNotShowLog4jLoggerInfos() {
