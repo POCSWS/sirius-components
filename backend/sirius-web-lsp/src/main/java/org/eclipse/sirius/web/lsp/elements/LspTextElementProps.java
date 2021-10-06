@@ -40,6 +40,8 @@ public final class LspTextElementProps implements IProps {
 
 	private String contents;
 
+	private String languageName;
+
 	// FLA: leaving this here for now just in case, but not sure we will need it.
 	private List<Element> children;
 
@@ -67,14 +69,19 @@ public final class LspTextElementProps implements IProps {
 		return this.contents;
 	}
 
+	public String getLanguageName() {
+		return this.languageName;
+	}
+
 	public static Builder newLspTextElementProps(UUID id) {
 		return new Builder(id);
 	}
 
 	@Override
 	public String toString() {
-		String pattern = "{0} '{'id: {1}, label: {2}', contents: {3}}'"; //$NON-NLS-1$
-		return MessageFormat.format(pattern, this.getClass().getSimpleName(), this.id, this.label, this.contents);
+		String pattern = "{0} '{'id: {1}, label: {2}, languageName: {3}, contents: {4}}'"; //$NON-NLS-1$
+		return MessageFormat.format(pattern, this.getClass().getSimpleName(), this.id, this.label, this.languageName,
+				this.contents);
 	}
 
 	/**
@@ -95,6 +102,8 @@ public final class LspTextElementProps implements IProps {
 		private String contents;
 
 		private List<Element> children;
+
+		private String languageName;
 
 		private Builder(UUID id) {
 			this.id = Objects.requireNonNull(id);
@@ -120,6 +129,11 @@ public final class LspTextElementProps implements IProps {
 			return this;
 		}
 
+		public Builder languageName(String languageName) {
+			this.languageName = Objects.requireNonNull(languageName);
+			return this;
+		}
+
 		public Builder children(List<Element> children) {
 			this.children = Objects.requireNonNull(children);
 			return this;
@@ -133,6 +147,7 @@ public final class LspTextElementProps implements IProps {
 			lspTextElementProps.descriptionId = Objects.requireNonNull(this.descriptionId);
 			lspTextElementProps.contents = Objects.requireNonNull(this.contents);
 			lspTextElementProps.children = Objects.requireNonNull(this.children);
+			lspTextElementProps.languageName = Objects.requireNonNull(this.languageName);
 			return lspTextElementProps;
 		}
 	}

@@ -51,6 +51,8 @@ public final class LspTextDescription implements IRepresentationDescription {
 
 	private Function<Object, String> serializer;
 
+	private String languageName;
+
 	private LspTextDescription() {
 		// Prevent instantiation
 	}
@@ -87,6 +89,10 @@ public final class LspTextDescription implements IRepresentationDescription {
 		return this.serializer;
 	}
 
+	public String getLanguageName() {
+		return this.languageName;
+	}
+
 	public static Builder newLspTextDescription(UUID id) {
 		return new Builder(id);
 	}
@@ -104,7 +110,7 @@ public final class LspTextDescription implements IRepresentationDescription {
 	 */
 	@SuppressWarnings("checkstyle:HiddenField")
 	public static final class Builder {
-		private UUID id;
+		private final UUID id;
 
 		private String label;
 
@@ -115,6 +121,8 @@ public final class LspTextDescription implements IRepresentationDescription {
 		private Function<VariableManager, Object> targetObjectProvider;
 
 		private Function<Object, String> serializer;
+
+		private String languageName;
 
 		private Builder(UUID id) {
 			this.id = Objects.requireNonNull(id);
@@ -145,6 +153,11 @@ public final class LspTextDescription implements IRepresentationDescription {
 			return this;
 		}
 
+		public Builder languageName(String languageName) {
+			this.languageName = Objects.requireNonNull(languageName);
+			return this;
+		}
+
 		public LspTextDescription build() {
 			LspTextDescription lspTextDescription = new LspTextDescription();
 			lspTextDescription.id = Objects.requireNonNull(this.id);
@@ -153,6 +166,7 @@ public final class LspTextDescription implements IRepresentationDescription {
 			lspTextDescription.targetObjectIdProvider = Objects.requireNonNull(this.targetObjectIdProvider);
 			lspTextDescription.targetObjectProvider = Objects.requireNonNull(this.targetObjectProvider);
 			lspTextDescription.serializer = Objects.requireNonNull(this.serializer);
+			lspTextDescription.languageName = Objects.requireNonNull(this.languageName);
 			return lspTextDescription;
 		}
 	}

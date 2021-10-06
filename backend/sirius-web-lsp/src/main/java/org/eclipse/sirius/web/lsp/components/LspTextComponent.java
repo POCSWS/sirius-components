@@ -58,6 +58,7 @@ public class LspTextComponent implements IComponent {
 				.descriptionId(lspTextDescription.getId())
 				.targetObjectId(targetObjectId)
 				.children(new ArrayList<>())
+				.languageName(lspTextDescription.getLanguageName())
 				.contents(contents)
 				.build();
         // @formatter:on

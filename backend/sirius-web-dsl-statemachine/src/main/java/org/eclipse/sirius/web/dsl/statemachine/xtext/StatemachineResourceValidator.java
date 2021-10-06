@@ -82,7 +82,7 @@ public class StatemachineResourceValidator extends ResourceValidatorImpl {
 	 * @param resource the (non-{@code null}) {@link Resource} that was validated.
 	 */
 	private void postValidation(List<Issue> issues, Resource resource) {
-		LOGGER.info("Performing " + postValidationBehaviors.size() + " post-validation behaviors for resource "
+		LOGGER.trace("Performing " + postValidationBehaviors.size() + " post-validation behaviors for resource "
 				+ resource.getURI());
 		this.postValidationBehaviors.forEach(behavior -> behavior.accept(issues, resource));
 	}

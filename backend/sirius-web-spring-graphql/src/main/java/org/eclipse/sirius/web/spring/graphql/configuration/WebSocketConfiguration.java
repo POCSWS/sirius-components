@@ -14,11 +14,15 @@ package org.eclipse.sirius.web.spring.graphql.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.eclipse.sirius.web.collaborative.api.services.IEditingContextEventProcessorRegistry;
+import org.eclipse.sirius.web.lsp.description.LspTextDescription;
+import org.eclipse.sirius.web.services.api.representations.IRepresentationDescriptionService;
 import org.eclipse.sirius.web.spring.graphql.api.URLConstants;
 import org.eclipse.sirius.web.spring.graphql.ws.GraphQLWebSocketHandler;
 import org.eclipse.sirius.web.spring.graphql.ws.lsp.LanguageServerWebSocketHandler;
@@ -60,13 +64,16 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
 
     private final IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry;
 
+    private final IRepresentationDescriptionService representationDescriptionService;
+
     public WebSocketConfiguration(@Value("${sirius.web.graphql.websocket.allowed.origins}") String allowedOrigins, GraphQL graphQL, ObjectMapper objectMapper, MeterRegistry meterRegistry,
-            IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry) {
+            IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry, IRepresentationDescriptionService representationDescriptionService) {
         this.allowedOrigins = Objects.requireNonNull(allowedOrigins);
         this.graphQL = Objects.requireNonNull(graphQL);
         this.objectMapper = Objects.requireNonNull(objectMapper);
         this.meterRegistry = Objects.requireNonNull(meterRegistry);
         this.editingContextEventProcessorRegistry = Objects.requireNonNull(editingContextEventProcessorRegistry);
+        this.representationDescriptionService = Objects.requireNonNull(representationDescriptionService);
     }
 
     @Override
@@ -75,11 +82,18 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
         WebSocketHandlerRegistration graphQLWebSocketRegistration = registry.addHandler(graphQLWebSocketHandler, URLConstants.GRAPHQL_SUBSCRIPTION_PATH);
         graphQLWebSocketRegistration.setAllowedOrigins(this.allowedOrigins);
 
+        List<LspTextDescription> allRegisteredTextualRepresentationDescriptions = this.representationDescriptionService.getRepresentationDescriptions().stream()
+                .filter(LspTextDescription.class::isInstance).map(LspTextDescription.class::cast).collect(Collectors.toList());
+        // All textual DSLs share the same WebSocketHandler.
         LanguageServerWebSocketHandler languageServerWebSocketHandler = new LanguageServerWebSocketHandler(this.objectMapper, this.meterRegistry, this.editingContextEventProcessorRegistry);
-        // TODO: hardcoded statemachine path.
-        WebSocketHandlerRegistration languageServerWebSocketRegistration = registry.addHandler(languageServerWebSocketHandler, "/language-servers/statemachine/*/*") //$NON-NLS-1$
-                .addInterceptors(this.createLanguageServerWebSocketInterceptor());
-        languageServerWebSocketRegistration.setAllowedOrigins(this.allowedOrigins);
+        allRegisteredTextualRepresentationDescriptions.forEach(lspTextDescription -> {
+            // WebSocket URL is expected to look like
+            // "xxx/language-servers/$languageName/$editingContextId/$representationId".
+            WebSocketHandlerRegistration languageServerWebSocketRegistration = registry
+                    .addHandler(languageServerWebSocketHandler, URLConstants.LANGUAGE_SERVERS_PATH + "/" + lspTextDescription.getLanguageName() + "/*/*") //$NON-NLS-1$ //$NON-NLS-2$
+                    .addInterceptors(this.createLanguageServerWebSocketInterceptor());
+            languageServerWebSocketRegistration.setAllowedOrigins(this.allowedOrigins);
+        });
     }
 
     @Bean
@@ -87,7 +101,7 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
         return new HandshakeInterceptor() {
             @Override
             public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
-                // URI of the WebSocketSession should look like "xxx://dsl/editingContextId/representationId".
+                // URI of the WebSocketSession should look like "xxx://languageName/editingContextId/representationId".
                 final String path = request.getURI().getPath();
                 final String lastSegment = path.substring(path.lastIndexOf('/') + 1);
                 final String pathWithoutLastSegment = path.substring(0, path.lastIndexOf('/'));

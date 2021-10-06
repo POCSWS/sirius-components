@@ -26,6 +26,8 @@ public final class URLConstants {
 
     public static final String IMAGE_BASE_PATH = API_BASE_PATH + "/images"; //$NON-NLS-1$
 
+    public static final String LANGUAGE_SERVERS_PATH = "/language-servers"; //$NON-NLS-1$
+
     private URLConstants() {
         // Prevent instantiation
     }

@@ -43,6 +43,7 @@ public class LspTextElementFactory implements IElementFactory {
                 .targetObjectId(props.getTargetObjectId())
                 .descriptionId(props.getDescriptionId())
                 .contents(props.getContents())
+                .languageName(props.getLanguageName())
                 .build();
         // @formatter:on
 	}

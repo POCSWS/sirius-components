@@ -69,8 +69,6 @@ public class LspTextEventProcessor implements ILspTextEventProcessor {
 
     public LspTextEventProcessor(IEditingContext editingContext, ILspTextContext lspTextContext, List<ILspTextEventHandler> lspTextEventHandlers, ISubscriptionManager subscriptionManager,
             ILspTextCreationService lspTextCreationService) {
-        this.logger.info("Creating the lspText event processor {}", lspTextContext.getLspText().getId()); //$NON-NLS-1$
-
         this.editingContext = Objects.requireNonNull(editingContext);
         this.lspTextContext = Objects.requireNonNull(lspTextContext);
         this.lspTextEventHandlers = Objects.requireNonNull(lspTextEventHandlers);
@@ -84,10 +82,6 @@ public class LspTextEventProcessor implements ILspTextEventProcessor {
         LspText lspText = this.lspTextCreationService.refresh(editingContext, lspTextContext).orElse(null);
         lspTextContext.update(lspText);
         this.lspTextEventFlux = new LspTextEventFlux(lspText);
-
-        if (lspText != null) {
-            this.logger.info("LspText refreshed: {})", lspText.getId()); //$NON-NLS-1$
-        }
     }
 
     @Override
@@ -131,9 +125,6 @@ public class LspTextEventProcessor implements ILspTextEventProcessor {
     public void refresh(IInput input, ChangeDescription changeDescription) {
         if (this.shouldRefresh(changeDescription)) {
             LspText refreshedLspText = this.lspTextCreationService.refresh(this.editingContext, this.lspTextContext).orElse(null);
-            if (refreshedLspText != null) {
-                this.logger.info("LspText refreshed: {}", refreshedLspText.getId()); //$NON-NLS-1$
-            }
 
             this.lspTextContext.reset();
             this.lspTextContext.update(refreshedLspText);
@@ -164,12 +155,12 @@ public class LspTextEventProcessor implements ILspTextEventProcessor {
         .doOnSubscribe(subscription -> {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
             this.subscriptionManager.add(input, username);
-            this.logger.info("{} has subscribed to the lspText {} {}", username, this.lspTextContext.getLspText().getId(), this.subscriptionManager); //$NON-NLS-1$
+            this.logger.trace("{} has subscribed to the lspText {} {}", username, this.lspTextContext.getLspText().getId(), this.subscriptionManager); //$NON-NLS-1$
         })
         .doOnCancel(() -> {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
             this.subscriptionManager.remove(UUID.randomUUID(), username);
-            this.logger.info("{} has unsubscribed from the lspText {} {}", username, this.lspTextContext.getLspText().getId(), this.subscriptionManager); //$NON-NLS-1$
+            this.logger.trace("{} has unsubscribed from the lspText {} {}", username, this.lspTextContext.getLspText().getId(), this.subscriptionManager); //$NON-NLS-1$
 
             if (this.subscriptionManager.isEmpty()) {
                 EmitResult emitResult = this.canBeDisposedSink.tryEmitNext(Boolean.TRUE);
@@ -189,8 +180,6 @@ public class LspTextEventProcessor implements ILspTextEventProcessor {
 
     @Override
     public void dispose() {
-        this.logger.info("Disposing the lspText event processor {}", this.lspTextContext.getLspText().getId()); //$NON-NLS-1$
-
         this.subscriptionManager.dispose();
         this.lspTextEventFlux.dispose();
     }

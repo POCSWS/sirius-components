@@ -47,6 +47,8 @@ public final class LspText implements IRepresentation, ISemanticRepresentation {
 
 	private String contents;
 
+	private String languageName;
+
 	private LspText() {
 		// Prevent instantiation
 	}
@@ -95,15 +97,21 @@ public final class LspText implements IRepresentation, ISemanticRepresentation {
 		return this.contents;
 	}
 
+	@GraphQLNonNull
+	@GraphQLField
+	public String getLanguageName() {
+		return this.languageName;
+	}
+
 	public static Builder newLspText(UUID id) {
 		return new Builder(id);
 	}
 
 	@Override
 	public String toString() {
-		String pattern = "{0} '{'id: {1}, label: {2}, targetObjectId: {3}, descriptionId: {4}, contents: {5}'}'"; //$NON-NLS-1$
-		return MessageFormat.format(pattern, this.getClass().getSimpleName(), this.id, this.label, this.targetObjectId,
-				this.descriptionId, this.contents);
+		String pattern = "{0} '{'id: {1}, label: {2}, languageName: {3}, targetObjectId: {4}, descriptionId: {5}, contents: {6}'}'"; //$NON-NLS-1$
+		return MessageFormat.format(pattern, this.getClass().getSimpleName(), this.id, this.label, this.languageName,
+				this.targetObjectId, this.descriptionId, this.contents);
 	}
 
 	/**
@@ -124,6 +132,8 @@ public final class LspText implements IRepresentation, ISemanticRepresentation {
 		private UUID descriptionId;
 
 		private String contents;
+
+		private String languageName;
 
 		private Builder(UUID id) {
 			this.id = Objects.requireNonNull(id);
@@ -149,6 +159,11 @@ public final class LspText implements IRepresentation, ISemanticRepresentation {
 			return this;
 		}
 
+		public Builder languageName(String languageName) {
+			this.languageName = Objects.requireNonNull(languageName);
+			return this;
+		}
+
 		public LspText build() {
 			LspText lspText = new LspText();
 			lspText.id = Objects.requireNonNull(this.id);
@@ -156,7 +171,8 @@ public final class LspText implements IRepresentation, ISemanticRepresentation {
 			lspText.label = Objects.requireNonNull(this.label);
 			lspText.targetObjectId = Objects.requireNonNull(this.targetObjectId);
 			lspText.descriptionId = Objects.requireNonNull(this.descriptionId);
-			lspText.contents = Objects.requireNonNull(contents);
+			lspText.contents = Objects.requireNonNull(this.contents);
+			lspText.languageName = Objects.requireNonNull(this.languageName);
 			return lspText;
 		}
 	}

@@ -112,7 +112,14 @@ public class LanguageServerWebSocketHandler extends TextWebSocketHandler {
 //                .subscribe(data -> this.send(session, new ConnectionKeepAliveMessage()));
         // @formatter:on
         // this.sessions2keepAliveSubscriptions.put(session, subscribe);
-        this.logger.info(String.format("[%s]WebSocket Connection Established", session.getId())); //$NON-NLS-1$
+        this.logger.info("[{}]Establishing WebSocketSession connection at {}", session.getId(), session.getUri()); //$NON-NLS-1$
+        if (this.languageServerRuntimeByWebSocketSession.containsKey(session)) {
+            throw new IllegalStateException("There already is a Language Server runtime for WebSocketSession " + session.getId()); //$NON-NLS-1$
+        } else {
+            final LanguageServerRuntime languageServerRuntime = new LanguageServerRuntime(session, this.editingContextEventProcessorRegistry);
+            this.languageServerRuntimeByWebSocketSession.put(session, languageServerRuntime);
+            this.logger.info("[{}]...established WebSocket Connection ({} active connections)", session.getId(), this.languageServerRuntimeByWebSocketSession.size()); //$NON-NLS-1$
+        }
     }
 
     @Override
@@ -122,15 +129,12 @@ public class LanguageServerWebSocketHandler extends TextWebSocketHandler {
             SecurityContextHolder.setContext(new SecurityContextImpl((Authentication) principal));
         }
 
-        // TODO: For now we maintain one LS per WebSocketSession.
-        final LanguageServerRuntime languageServerRuntime = this.languageServerRuntimeByWebSocketSession.computeIfAbsent(session,
-                (webSocketSession) -> new LanguageServerRuntime(webSocketSession, this.editingContextEventProcessorRegistry));
-        languageServerRuntime.forwardMessage(message);
+        this.languageServerRuntimeByWebSocketSession.get(session).forwardMessage(message);
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        this.logger.info("[{}]afterConnectionClosed {}", session.getId(), status.getReason()); //$NON-NLS-1$
+        this.logger.info("[{}]Closing WebSocketSession connection...", session.getId()); //$NON-NLS-1$
 
         Principal principal = session.getPrincipal();
         if (principal instanceof Authentication) {
@@ -141,9 +145,12 @@ public class LanguageServerWebSocketHandler extends TextWebSocketHandler {
         // keepAliveSubscription.dispose();
 
         this.languageServerRuntimeByWebSocketSession.get(session).shutdown();
+        this.languageServerRuntimeByWebSocketSession.remove(session);
 
         // Closing the connection will trigger the same behavior as indicating that the connection should be closed
         new ConnectionTerminateMessageHandler(session, new HashMap<>()).handle();
+
+        this.logger.info("[{}]...closed WebSocketSession connection ({} remaining connections)", session.getId(), this.languageServerRuntimeByWebSocketSession.size()); //$NON-NLS-1$
     }
 
 }
