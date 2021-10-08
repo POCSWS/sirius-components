@@ -137,9 +137,9 @@ public class LanguageServerRuntime {
                 // When the textual representation parses into a valid model, we want to update the semantic model (and
                 // also other representations).
                 final IInput input = new UpdateSemanticResourceInput(resource, representationId);
-                this.logger.info("Validation successful, dispatching event " + input.toString()); //$NON-NLS-1$
+                this.logger.debug("Validation successful, dispatching event " + input.toString()); //$NON-NLS-1$
                 Optional<IPayload> maybeEventResult = editingContextEventProcessorRegistry.dispatchEvent(editingContextId, input);
-                this.logger.info("Event dispatch resulting payload: " + maybeEventResult.map(Object::toString)); //$NON-NLS-1$
+                this.logger.debug("Event dispatch resulting payload: " + maybeEventResult.map(Object::toString)); //$NON-NLS-1$
             }
         };
         this.resourceValidator = xtextLanguageServerModuleWrapper.getSetupInjector(StatemachineSiriusWebIdeSetup.class).orElseThrow().getInstance(StatemachineResourceValidator.class);
