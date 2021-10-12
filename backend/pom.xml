@@ -47,6 +47,8 @@
 		<module>sirius-web-diagrams-tests</module>
 		<module>sirius-web-diagrams</module>
 		<module>sirius-web-dsl-statemachine</module>
+		<module>sirius-web-dsl-sysmlv2</module>
+		<module>sirius-web-dsl-sysmlv2-edit</module>
 		<module>sirius-web-forms-tests</module>
 		<module>sirius-web-forms</module>
 		<module>sirius-web-lsp</module>
@@ -80,5 +82,6 @@
 		<module>sirius-web-validation</module>
 		<module>sirius-web-view</module>
 		<module>sirius-web-view-edit</module>
+		<module>sirius-web-xtext</module>
 	</modules>
 </project>

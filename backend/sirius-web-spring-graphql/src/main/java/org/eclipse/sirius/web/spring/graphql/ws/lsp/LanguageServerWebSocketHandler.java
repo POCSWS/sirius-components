@@ -63,6 +63,8 @@ public class LanguageServerWebSocketHandler extends TextWebSocketHandler {
 
     private final IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry;
 
+    private final TextualLanguageRegistry textualLanguageRegistry;
+
     // private final Map<WebSocketSession, List<SubscriptionEntry>> sessions2entries = new ConcurrentHashMap<>();
 
     // private final Map<WebSocketSession, Disposable> sessions2keepAliveSubscriptions = new ConcurrentHashMap<>();
@@ -79,10 +81,12 @@ public class LanguageServerWebSocketHandler extends TextWebSocketHandler {
 
     private final MeterRegistry meterRegistry;
 
-    public LanguageServerWebSocketHandler(ObjectMapper objectMapper, MeterRegistry meterRegistry, IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry) {
+    public LanguageServerWebSocketHandler(ObjectMapper objectMapper, MeterRegistry meterRegistry, IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry,
+            TextualLanguageRegistry textualLanguagesRegistry) {
         this.objectMapper = Objects.requireNonNull(objectMapper);
         this.meterRegistry = Objects.requireNonNull(meterRegistry);
         this.editingContextEventProcessorRegistry = Objects.requireNonNull(editingContextEventProcessorRegistry);
+        this.textualLanguageRegistry = Objects.requireNonNull(textualLanguagesRegistry);
 
 //         @formatter:off
 //        this.startMessageCounter = Counter.builder(COUNTER_METRIC_NAME)
@@ -116,9 +120,12 @@ public class LanguageServerWebSocketHandler extends TextWebSocketHandler {
         if (this.languageServerRuntimeByWebSocketSession.containsKey(session)) {
             throw new IllegalStateException("There already is a Language Server runtime for WebSocketSession " + session.getId()); //$NON-NLS-1$
         } else {
-            final LanguageServerRuntime languageServerRuntime = new LanguageServerRuntime(session, this.editingContextEventProcessorRegistry);
-            this.languageServerRuntimeByWebSocketSession.put(session, languageServerRuntime);
-            this.logger.info("[{}]...established WebSocket Connection ({} active connections)", session.getId(), this.languageServerRuntimeByWebSocketSession.size()); //$NON-NLS-1$
+            LanguageServerRuntime.tryToCreate(session, this.editingContextEventProcessorRegistry, this.textualLanguageRegistry).ifPresentOrElse(languageServerRuntime -> {
+                this.languageServerRuntimeByWebSocketSession.put(session, languageServerRuntime);
+                this.logger.info("[{}]...established WebSocket Connection ({} active connections)", session.getId(), this.languageServerRuntimeByWebSocketSession.size()); //$NON-NLS-1$
+            }, () -> {
+                this.logger.warn("[{}]Could not create {}" + LanguageServerRuntime.class.getSimpleName()); //$NON-NLS-1$
+            });
         }
     }
 

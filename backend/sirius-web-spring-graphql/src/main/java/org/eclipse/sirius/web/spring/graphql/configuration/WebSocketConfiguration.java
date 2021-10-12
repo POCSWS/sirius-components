@@ -26,11 +26,15 @@ import org.eclipse.sirius.web.services.api.representations.IRepresentationDescri
 import org.eclipse.sirius.web.spring.graphql.api.URLConstants;
 import org.eclipse.sirius.web.spring.graphql.ws.GraphQLWebSocketHandler;
 import org.eclipse.sirius.web.spring.graphql.ws.lsp.LanguageServerWebSocketHandler;
+import org.eclipse.sirius.web.spring.graphql.ws.lsp.TextualLanguageRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.util.StringUtils;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -54,6 +58,8 @@ import io.micrometer.core.instrument.MeterRegistry;
 @EnableWebSocket
 public class WebSocketConfiguration implements WebSocketConfigurer {
 
+    private final Logger logger = LoggerFactory.getLogger(WebSocketConfiguration.class);
+
     private final String allowedOrigins;
 
     private final GraphQL graphQL;
@@ -64,15 +70,19 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
 
     private final IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry;
 
+    private final TextualLanguageRegistry textualLanguageRegistry;
+
     private final IRepresentationDescriptionService representationDescriptionService;
 
     public WebSocketConfiguration(@Value("${sirius.web.graphql.websocket.allowed.origins}") String allowedOrigins, GraphQL graphQL, ObjectMapper objectMapper, MeterRegistry meterRegistry,
-            IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry, IRepresentationDescriptionService representationDescriptionService) {
+            IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry, TextualLanguageRegistry textualLanguagesRegistry,
+            IRepresentationDescriptionService representationDescriptionService) {
         this.allowedOrigins = Objects.requireNonNull(allowedOrigins);
         this.graphQL = Objects.requireNonNull(graphQL);
         this.objectMapper = Objects.requireNonNull(objectMapper);
         this.meterRegistry = Objects.requireNonNull(meterRegistry);
         this.editingContextEventProcessorRegistry = Objects.requireNonNull(editingContextEventProcessorRegistry);
+        this.textualLanguageRegistry = Objects.requireNonNull(textualLanguagesRegistry);
         this.representationDescriptionService = Objects.requireNonNull(representationDescriptionService);
     }
 
@@ -85,7 +95,8 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
         List<LspTextDescription> allRegisteredTextualRepresentationDescriptions = this.representationDescriptionService.getRepresentationDescriptions().stream()
                 .filter(LspTextDescription.class::isInstance).map(LspTextDescription.class::cast).collect(Collectors.toList());
         // All textual DSLs share the same WebSocketHandler.
-        LanguageServerWebSocketHandler languageServerWebSocketHandler = new LanguageServerWebSocketHandler(this.objectMapper, this.meterRegistry, this.editingContextEventProcessorRegistry);
+        LanguageServerWebSocketHandler languageServerWebSocketHandler = new LanguageServerWebSocketHandler(this.objectMapper, this.meterRegistry, this.editingContextEventProcessorRegistry,
+                this.textualLanguageRegistry);
         allRegisteredTextualRepresentationDescriptions.forEach(lspTextDescription -> {
             // WebSocket URL is expected to look like
             // "xxx/language-servers/$languageName/$editingContextId/$representationId".
@@ -101,18 +112,28 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
         return new HandshakeInterceptor() {
             @Override
             public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
-                // URI of the WebSocketSession should look like "xxx://languageName/editingContextId/representationId".
                 final String path = request.getURI().getPath();
-                final String lastSegment = path.substring(path.lastIndexOf('/') + 1);
-                final String pathWithoutLastSegment = path.substring(0, path.lastIndexOf('/'));
-                final String segmentBeforeLastSegment = pathWithoutLastSegment.substring(pathWithoutLastSegment.lastIndexOf('/') + 1);
+                // URI of the WebSocketSession should look like "wss://languageName/editingContextId/representationId".
+                if (StringUtils.countOccurrencesOf(path, "/") == 4) { //$NON-NLS-1$
+                    final String lastSegment = path.substring(path.lastIndexOf('/') + 1);
+                    final String pathWithoutLastSegment = path.substring(0, path.lastIndexOf('/'));
+                    final String segmentBeforeLastSegment = pathWithoutLastSegment.substring(pathWithoutLastSegment.lastIndexOf('/') + 1);
+                    final String pathWithoutLastTwoSegments = pathWithoutLastSegment.substring(0, path.lastIndexOf('/'));
+                    final String segmentBeforeLastTwoSegments = pathWithoutLastTwoSegments.substring(pathWithoutLastTwoSegments.lastIndexOf('/') + 1);
 
-                final UUID editingContextId = UUID.fromString(segmentBeforeLastSegment);
-                final UUID representationId = UUID.fromString(lastSegment);
+                    final String languageName = segmentBeforeLastTwoSegments;
+                    final UUID editingContextId = UUID.fromString(segmentBeforeLastSegment);
+                    final UUID representationId = UUID.fromString(lastSegment);
 
-                attributes.put("editingContextId", editingContextId); //$NON-NLS-1$
-                attributes.put("representationId", representationId); //$NON-NLS-1$
-                return true;
+                    attributes.put("languageName", languageName); //$NON-NLS-1$
+                    attributes.put("editingContextId", editingContextId); //$NON-NLS-1$
+                    attributes.put("representationId", representationId); //$NON-NLS-1$
+
+                    return true;
+                } else {
+                    WebSocketConfiguration.this.logger.error("WebSocket URI path is not as expected: {}", path); //$NON-NLS-1$
+                    return false;
+                }
             }
 
             @Override

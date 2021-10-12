@@ -36,9 +36,10 @@ import org.eclipse.sirius.web.collaborative.api.services.IEditingContextEventPro
 import org.eclipse.sirius.web.collaborative.lsp.api.dto.UpdateSemanticResourceInput;
 import org.eclipse.sirius.web.core.api.IInput;
 import org.eclipse.sirius.web.core.api.IPayload;
-import org.eclipse.sirius.web.dsl.statemachine.xtext.StatemachineResourceValidator;
-import org.eclipse.sirius.web.dsl.statemachine.xtext.StatemachineResourceValidator.PostResourceValidationBehavior;
-import org.eclipse.sirius.web.dsl.statemachine.xtext.StatemachineSiriusWebIdeSetup;
+import org.eclipse.sirius.web.spring.graphql.ws.lsp.xtext.XtextLanguageServerModuleWrapper;
+import org.eclipse.sirius.web.xtext.IResourceValidatorWithPostValidation;
+import org.eclipse.sirius.web.xtext.IResourceValidatorWithPostValidation.PostResourceValidationBehavior;
+import org.eclipse.xtext.validation.IResourceValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -55,13 +56,13 @@ import org.springframework.web.socket.WebSocketSession;
  * @author flatombe
  */
 public class LanguageServerRuntime {
-    private final Logger logger = LoggerFactory.getLogger(LanguageServerRuntime.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LanguageServerRuntime.class);
 
     private final PostResourceValidationBehavior postValidationBehavior;
 
     private final WebSocketSession session;
 
-    private final StatemachineResourceValidator resourceValidator;
+    private final IResourceValidatorWithPostValidation resourceValidator;
 
     private final Future<Future<Void>> runningLauncher;
 
@@ -88,7 +89,7 @@ public class LanguageServerRuntime {
             if (i > 0) {
                 responsePayload = responsePayload.substring(i + 4);
             }
-            LanguageServerRuntime.this.logger.debug("[{}]Response: {}", LanguageServerRuntime.this.session.getId(), responsePayload); //$NON-NLS-1$
+            LOGGER.debug("[{}]Response: {}", LanguageServerRuntime.this.session.getId(), responsePayload); //$NON-NLS-1$
             if (LanguageServerRuntime.this.session.isOpen()) {
                 try {
                     LanguageServerRuntime.this.session.sendMessage(new TextMessage(responsePayload));
@@ -96,7 +97,7 @@ public class LanguageServerRuntime {
                     throw new RuntimeException(ioException);
                 }
             } else {
-                LanguageServerRuntime.this.logger.error("[{}]WebSocket session has been closed so the response cannot be sent", LanguageServerRuntime.this.session.getId()); //$NON-NLS-1$
+                LOGGER.error("[{}]WebSocket session has been closed so the response cannot be sent", LanguageServerRuntime.this.session.getId()); //$NON-NLS-1$
             }
         }
     };
@@ -110,22 +111,23 @@ public class LanguageServerRuntime {
      * @param editingContextEventProcessorRegistry
      *            the (non-{@code null}) {@link IEditingContextEventProcessorRegistry}.
      */
-    public LanguageServerRuntime(WebSocketSession webSocketSession, IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry) {
+    protected LanguageServerRuntime(WebSocketSession webSocketSession, String languageName, UUID editingContextId, UUID representationId,
+            IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry, IResourceValidatorWithPostValidation languageResourceValidator, SiriusWebLanguageServerImpl languageServer) {
         this.session = Objects.requireNonNull(webSocketSession);
+        Objects.requireNonNull(languageName);
+        Objects.requireNonNull(editingContextId);
+        Objects.requireNonNull(representationId);
         Objects.requireNonNull(editingContextEventProcessorRegistry);
+        this.resourceValidator = Objects.requireNonNull(languageResourceValidator);
+        Objects.requireNonNull(languageServer);
 
-        this.logger.debug("[{}]Instantiating LSRuntime", this.session.getId()); //$NON-NLS-1$
-
-        final UUID editingContextId = (UUID) this.session.getAttributes().get("editingContextId"); //$NON-NLS-1$
-        final UUID representationId = (UUID) this.session.getAttributes().get("representationId"); //$NON-NLS-1$
+        LOGGER.trace("[{}]Instantiating LSRuntime {}", this.session.getId(), languageName + "/" + editingContextId.toString() + "/" + representationId.toString()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
         try {
             this.languageServerIn.connect(this.webSocketOut);
         } catch (IOException ioException) {
             throw new RuntimeException(ioException);
         }
-
-        final XtextLanguageServerModuleWrapper xtextLanguageServerModuleWrapper = new XtextLanguageServerModuleWrapper();
 
         this.postValidationBehavior = (issues, resource) -> {
             Principal principal = this.session.getPrincipal();
@@ -137,19 +139,58 @@ public class LanguageServerRuntime {
                 // When the textual representation parses into a valid model, we want to update the semantic model (and
                 // also other representations).
                 final IInput input = new UpdateSemanticResourceInput(resource, representationId);
-                this.logger.debug("Validation successful, dispatching event " + input.toString()); //$NON-NLS-1$
+                LOGGER.debug("Validation successful, dispatching event " + input.toString()); //$NON-NLS-1$
                 Optional<IPayload> maybeEventResult = editingContextEventProcessorRegistry.dispatchEvent(editingContextId, input);
-                this.logger.debug("Event dispatch resulting payload: " + maybeEventResult.map(Object::toString)); //$NON-NLS-1$
+                LOGGER.debug("Event dispatch resulting payload: " + maybeEventResult.map(Object::toString)); //$NON-NLS-1$
             }
         };
-        this.resourceValidator = xtextLanguageServerModuleWrapper.getSetupInjector(StatemachineSiriusWebIdeSetup.class).orElseThrow().getInstance(StatemachineResourceValidator.class);
         this.resourceValidator.addPostValidationBehavior(this.postValidationBehavior);
 
-        this.logger.debug("[{}]Creating and starting Xtext Language Server...", this.session.getId()); //$NON-NLS-1$
-        final SiriusWebLanguageServerImpl languageServer = xtextLanguageServerModuleWrapper.getServerModuleInjector().getInstance(SiriusWebLanguageServerImpl.class);
+        LOGGER.debug("[{}]Creating and starting Xtext Language Server...", this.session.getId()); //$NON-NLS-1$
         Launcher<LanguageClient> launcher = createJsonRpcLauncher(languageServer, this.languageServerIn, this.languageServerOut);
         this.runningLauncher = this.start(launcher, Executors.newCachedThreadPool());
-        this.logger.debug("[{}]Started Xtext Language Server", this.session.getId()); //$NON-NLS-1$
+        LOGGER.debug("[{}]Started Xtext Language Server", this.session.getId()); //$NON-NLS-1$
+    }
+
+    /**
+     * Attempts to create a {@link LanguageServerRuntime}. In case of failure, errors are logged to attempt to explain
+     * why the creation could not succeed.
+     *
+     * @param webSocketSession
+     *            the (non-{@code null}) {@link WebSocketSession} through which the created language server will
+     *            communicate with the language client.
+     * @param editingContextEventProcessorRegistry
+     *            the (non-{@code null}) {@link IEditingContextEventProcessorRegistry}.
+     * @param textualLanguageRegistry
+     *            the (non-{@code null}) {@link TextualLanguageRegistry}.
+     * @return the (non-{@code null}) {@link Optional} representing the created {@link LanguageServerRuntime}.
+     */
+    public static Optional<LanguageServerRuntime> tryToCreate(WebSocketSession webSocketSession, IEditingContextEventProcessorRegistry editingContextEventProcessorRegistry,
+            TextualLanguageRegistry textualLanguageRegistry) {
+        Objects.requireNonNull(webSocketSession);
+        Objects.requireNonNull(editingContextEventProcessorRegistry);
+        Objects.requireNonNull(textualLanguageRegistry);
+
+        final UUID editingContextId = (UUID) webSocketSession.getAttributes().get("editingContextId"); //$NON-NLS-1$
+        final UUID representationId = (UUID) webSocketSession.getAttributes().get("representationId"); //$NON-NLS-1$
+        final String languageName = (String) webSocketSession.getAttributes().get("languageName"); //$NON-NLS-1$
+
+        return Optional.ofNullable(textualLanguageRegistry.getArtefacts(languageName).map(artefacts -> {
+            final XtextLanguageServerModuleWrapper xtextLanguageServerModuleWrapper = new XtextLanguageServerModuleWrapper();
+            final IResourceValidator languageResourceValidator = xtextLanguageServerModuleWrapper.getSetupInjector(artefacts.getSetupType()).orElseThrow().getInstance(IResourceValidator.class);
+            if (languageResourceValidator instanceof IResourceValidatorWithPostValidation) {
+                final IResourceValidatorWithPostValidation resourceValidatorWithPostValidation = (IResourceValidatorWithPostValidation) languageResourceValidator;
+                final SiriusWebLanguageServerImpl languageServer = xtextLanguageServerModuleWrapper.getServerModuleInjector().getInstance(SiriusWebLanguageServerImpl.class);
+                return new LanguageServerRuntime(webSocketSession, languageName, editingContextId, representationId, editingContextEventProcessorRegistry, resourceValidatorWithPostValidation,
+                        languageServer);
+            } else {
+                LOGGER.error("{} is not an instance of {}", languageResourceValidator.toString(), IResourceValidatorWithPostValidation.class.getCanonicalName()); //$NON-NLS-1$
+                return null;
+            }
+        }).orElseGet(() -> {
+            LOGGER.error("There was no {} registered for language {}", TextualLanguageArtefacts.class.getSimpleName(), languageName); //$NON-NLS-1$
+            return null;
+        }));
     }
 
     /**
@@ -192,7 +233,7 @@ public class LanguageServerRuntime {
      */
     private Future<Future<Void>> start(Launcher<LanguageClient> launcher, ExecutorService executorService) {
         final Future<Future<Void>> languageServerStarting = executorService.submit(() -> {
-            this.logger.trace("[{}]JSON-RPC Launcher started successfully", this.session.getId()); //$NON-NLS-1$
+            LOGGER.trace("[{}]JSON-RPC Launcher started successfully", this.session.getId()); //$NON-NLS-1$
             final Future<Void> languageServerListening = launcher.startListening();
             while (!languageServerListening.isDone()) {
                 // Listen until the Language Server InputStream gets closed.
@@ -209,7 +250,7 @@ public class LanguageServerRuntime {
      *            the (non-{@code null}) {@link TextMessage}.
      */
     public void forwardMessage(TextMessage message) {
-        this.logger.debug(String.format("[%s]Received message of size %s:%s", this.session.getId(), message.getPayloadLength(), message.getPayload())); //$NON-NLS-1$
+        LOGGER.debug(String.format("[%s]Received message of size %s:%s", this.session.getId(), message.getPayloadLength(), message.getPayload())); //$NON-NLS-1$
         try {
             // Header part, cf.
             // https://microsoft.github.io/language-server-protocol/specifications/specification-current/#headerPart
@@ -231,7 +272,7 @@ public class LanguageServerRuntime {
      * Shuts down this {@link LanguageServerRuntime}.
      */
     public void shutdown() {
-        this.logger.debug("[{}]Shutting down LSRuntime...", this.session.getId()); //$NON-NLS-1$
+        LOGGER.debug("[{}]Shutting down LSRuntime...", this.session.getId()); //$NON-NLS-1$
 
         try {
             this.languageServerIn.close();
@@ -242,12 +283,12 @@ public class LanguageServerRuntime {
             this.resourceValidator.removePostValidationBehavior(this.postValidationBehavior);
         }
 
-        this.logger.trace("[{}]Shutting down Xtext Language Server...", this.session.getId()); //$NON-NLS-1$
+        LOGGER.trace("[{}]Shutting down Xtext Language Server...", this.session.getId()); //$NON-NLS-1$
         if (this.runningLauncher.cancel(true)) {
             // try {
             // final boolean cancelled = this.runningLauncher.get().cancel(true);
             // if (cancelled) {
-            this.logger.trace("[{}]JSON-RPC Launcher shut down successfully", this.session.getId()); //$NON-NLS-1$
+            LOGGER.trace("[{}]JSON-RPC Launcher shut down successfully", this.session.getId()); //$NON-NLS-1$
             // } else {
             // logger.info("[{}]JSON-RPC Launcher could not be shut down", this.session.getId()); //$NON-NLS-1$
             // }
@@ -255,7 +296,7 @@ public class LanguageServerRuntime {
             // throw new RuntimeException(exception);
             // }
         }
-        this.logger.trace("[{}]Shut down Xtext Language Server successfully", this.session.getId()); //$NON-NLS-1$
-        this.logger.debug("[{}]Shut down LSRuntime", this.session.getId()); //$NON-NLS-1$
+        LOGGER.trace("[{}]Shut down Xtext Language Server successfully", this.session.getId()); //$NON-NLS-1$
+        LOGGER.debug("[{}]Shut down LSRuntime", this.session.getId()); //$NON-NLS-1$
     }
 }

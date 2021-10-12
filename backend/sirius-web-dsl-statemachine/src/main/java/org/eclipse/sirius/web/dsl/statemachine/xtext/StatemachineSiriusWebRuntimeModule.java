@@ -1,5 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2021 Obeo.
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *     Obeo - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.sirius.web.dsl.statemachine.xtext;
 
+import org.eclipse.sirius.web.xtext.ResourceValidatorImplWithPostValidation;
 import org.eclipse.xtext.validation.IResourceValidator;
 
 import fr.obeo.dsl.designer.sample.StatemachineRuntimeModule;
@@ -21,6 +34,6 @@ public class StatemachineSiriusWebRuntimeModule extends StatemachineRuntimeModul
 	 * This binding gets picked up reflexively thanks to the method name.
 	 */
 	public Class<? extends IResourceValidator> bindIResourceValidator() {
-		return StatemachineResourceValidator.class;
+		return ResourceValidatorImplWithPostValidation.class;
 	}
 }
