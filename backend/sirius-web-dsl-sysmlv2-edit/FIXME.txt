@@ -1,0 +1,6 @@
+For launching locally somehow
+
+Copy plugin.properties to:
+sirius-web-dsl-sysmlv2-edit\target\classes\org\omg\sysml\lang\sysml\provider
+and copy icons/full to:
+sirius-web-dsl-sysmlv2-edit\target\classes\org\omg\sysml\lang\sysml\provider

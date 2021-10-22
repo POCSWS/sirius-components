@@ -32,8 +32,9 @@ public class TextualLanguageRegistry {
     private final Map<String, TextualLanguageArtefacts> index = new LinkedHashMap<>();
 
     public TextualLanguageRegistry() {
-        this.registerArtefacts("statemachine", new TextualLanguageArtefacts(StatemachineSiriusWebIdeSetup.class)); //$NON-NLS-1$
-        this.registerArtefacts("sysml", new TextualLanguageArtefacts(SysMLSiriusWebIdeSetup.class)); //$NON-NLS-1$
+        // The language name should match the one used in IRepresentationDescriptionRegistryConfigurer implementations.
+        this.registerArtefacts("Statemachine", new TextualLanguageArtefacts(StatemachineSiriusWebIdeSetup.class)); //$NON-NLS-1$
+        this.registerArtefacts("SysML", new TextualLanguageArtefacts(SysMLSiriusWebIdeSetup.class)); //$NON-NLS-1$
     }
 
     /**

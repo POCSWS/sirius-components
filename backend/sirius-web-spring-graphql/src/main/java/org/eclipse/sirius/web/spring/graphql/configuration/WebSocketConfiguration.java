@@ -118,7 +118,7 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
                     final String lastSegment = path.substring(path.lastIndexOf('/') + 1);
                     final String pathWithoutLastSegment = path.substring(0, path.lastIndexOf('/'));
                     final String segmentBeforeLastSegment = pathWithoutLastSegment.substring(pathWithoutLastSegment.lastIndexOf('/') + 1);
-                    final String pathWithoutLastTwoSegments = pathWithoutLastSegment.substring(0, path.lastIndexOf('/'));
+                    final String pathWithoutLastTwoSegments = pathWithoutLastSegment.substring(0, pathWithoutLastSegment.lastIndexOf('/'));
                     final String segmentBeforeLastTwoSegments = pathWithoutLastTwoSegments.substring(pathWithoutLastTwoSegments.lastIndexOf('/') + 1);
 
                     final String languageName = segmentBeforeLastTwoSegments;
