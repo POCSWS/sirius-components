@@ -12,8 +12,10 @@
  *******************************************************************************/
 package org.eclipse.sirius.web.dsl.sysmlv2.xtext;
 
+import org.eclipse.sirius.web.dsl.sysmlv2.xtext.serializer.SysMLAdHocSerializer;
 import org.eclipse.sirius.web.xtext.IResourceValidatorWithPostValidation;
 import org.eclipse.sirius.web.xtext.ResourceValidatorImplWithPostValidation;
+import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.omg.sysml.xtext.SysMLRuntimeModule;
 
@@ -35,5 +37,10 @@ public class SysMLSiriusWebRuntimeModule extends SysMLRuntimeModule {
 	 */
 	public Class<? extends IResourceValidator> bindIResourceValidator() {
 		return ResourceValidatorImplWithPostValidation.class;
+	}
+
+	@Override
+	public Class<? extends ISerializer> bindISerializer() {
+		return SysMLAdHocSerializer.class;
 	}
 }

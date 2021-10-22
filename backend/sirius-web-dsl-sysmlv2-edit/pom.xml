@@ -21,7 +21,7 @@
 
 	<properties>
 		<java.version>11</java.version>
-		<sysml-v2.version>0.16.0-SNAPSHOT</sysml-v2.version>
+		<sysml-v2.version>0.16.0</sysml-v2.version>
 		<xtext-version>2.26.0.M1</xtext-version>
 		<sirius.components.version>0.3.5</sirius.components.version>
 	</properties>

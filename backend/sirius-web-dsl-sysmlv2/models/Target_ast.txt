@@ -1,0 +1,371 @@
+Package {
+    attr String identifier 'fe0b84ca-ab94-492d-a8ad-20154b35610e'
+    cref Relationship ownedRelationship [
+        0: Membership {
+            cref Element ownedRelatedElement [
+                0: Package {
+                    attr String identifier '86bc0426-fb99-47b0-9138-947746083cde'
+                }
+            ]
+            attr String memberName 'subPackage'
+        }
+        1: Membership {
+            cref Element ownedRelatedElement [
+                0: PartDefinition {
+                }
+            ]
+            attr String memberName 'partDef1'
+        }
+        2: Membership {
+            cref Element ownedRelatedElement [
+                0: ActionDefinition {
+                    cref Relationship ownedRelationship [
+                        0: FeatureMembership {
+                            cref Element ownedRelatedElement [
+                                0: PerformActionUsage {
+                                    cref Relationship ownedRelationship [
+                                        0: Subsetting {
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                        1: Membership {
+                            cref Element ownedRelatedElement [
+                                0: PortUsage {
+                                    cref Relationship ownedRelationship [
+                                        0: ConjugatedPortTyping {
+                                            attr String identifier '841a04db-f00b-498a-97f1-4c53bc093659'
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+            attr String memberName 'actionDef1'
+        }
+        3: Membership {
+            cref Element ownedRelatedElement [
+                0: PortDefinition {
+                    cref Relationship ownedRelationship [
+                        0: Membership {
+                            cref Element ownedRelatedElement [
+                                0: PortUsage {
+                                    cref Relationship ownedRelationship [
+                                        0: FeatureTyping {
+                                            attr String identifier '2d4d2fb2-2679-4cde-90ad-53b126ceb0ec'
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                        1: ParameterMembership {
+                            cref Element ownedRelatedElement [
+                                0: ReferenceUsage {
+                                    attr FeatureDirectionKind direction 'in'
+                                }
+                            ]
+                        }
+                        2: ParameterMembership {
+                            cref Element ownedRelatedElement [
+                                0: ReferenceUsage {
+                                    attr FeatureDirectionKind direction 'out'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+            attr String memberName 'portDef1'
+        }
+        4: Membership {
+            cref Element ownedRelatedElement [
+                0: PartUsage {
+                    cref Relationship ownedRelationship [
+                        0: ParameterMembership {
+                            cref Element ownedRelatedElement [
+                                0: ReferenceUsage {
+                                    attr FeatureDirectionKind direction 'in'
+                                }
+                            ]
+                        }
+                        1: ParameterMembership {
+                            cref Element ownedRelatedElement [
+                                0: ReferenceUsage {
+                                    attr FeatureDirectionKind direction 'out'
+                                }
+                            ]
+                        }
+                        2: FeatureTyping {
+                            attr String identifier 'eaa8635d-9d03-4b40-adc6-8417a454f997'
+                        }
+                    ]
+                }
+            ]
+            attr String memberName 'partUsage1'
+        }
+        5: Membership {
+            cref Element ownedRelatedElement [
+                0: ActionUsage {
+                    cref Relationship ownedRelationship [
+                        0: ParameterMembership {
+                            cref Element ownedRelatedElement [
+                                0: ReferenceUsage {
+                                    attr FeatureDirectionKind direction 'out'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+            attr String memberName 'actionUsage1'
+        }
+        6: Membership {
+            cref Element ownedRelatedElement [
+                0: ActionDefinition {
+                }
+            ]
+            attr String memberName 'actionDef2'
+        }
+        7: Membership {
+            cref Element ownedRelatedElement [
+                0: ActionUsage {
+                    cref Relationship ownedRelationship [
+                        0 : FeatureTyping {
+                            attr String identifier '496f9574-35d1-4460-9466-f4f07ab8f176'
+                        }
+                        1 : FeatureMembership {
+                            cref Element ownedRelatedElement [
+                                0: ActionUsage {
+                                    cref Relationship ownedRelationship [
+                                        0: ParameterMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: ReferenceUsage {
+                                                    attr FeatureDirectionKind direction 'in'
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                    attr Boolean isComposite 'true'
+                                }
+                            ]
+                            attr String memberName 'start'
+                        }
+                        2 : FeatureMembership {
+                            cref Element ownedRelatedElement [
+                                0: ActionUsage {
+                                    attr Boolean isComposite 'true'
+                                }
+                            ]
+                            attr String memberName 'done'
+                        }
+                        3 : FeatureMembership {
+                            cref Element ownedRelatedElement [
+                                0: MergeNode {
+                                    attr Boolean isComposite 'true'
+                                }
+                            ]
+                        }
+                        4 : FeatureMembership {
+                            cref Element ownedRelatedElement [
+                                0: ActionUsage {
+                                    cref Relationship ownedRelationship [
+                                        0: ParameterMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: ReferenceUsage {
+                                                    attr FeatureDirectionKind direction 'in'
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                    attr Boolean isComposite 'true'
+                                }
+                            ]
+                        }
+                        5 : FeatureMembership {
+                            cref Element ownedRelatedElement [
+                                0: AcceptActionUsage {
+                                    cref Relationship ownedRelationship [
+                                        0: FeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: ItemFeature {
+                                                    attr String identifier '51c1db64-ad95-4d17-8930-b7531ac87909'
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                    attr Boolean isComposite 'true'
+                                }
+                            ]
+                        }
+                        6 : FeatureMembership {
+                            cref Element ownedRelatedElement [
+                                0: SendActionUsage {
+                                    attr Boolean isComposite 'true'
+                                }
+                            ]
+                        }
+                        7 : FeatureMembership {
+                            cref Element ownedRelatedElement [
+                                0: Succession {
+                                    attr String identifier '5016ff74-ae17-4bd4-8895-61b782dca55e'
+                                    cref Relationship ownedRelationship [
+                                        0: EndFeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: SourceEnd {
+                                                    cref Relationship ownedRelationship [
+                                                        0: Subsetting {
+                                                        }
+                                                    ]
+                                                    attr Boolean isEnd 'true'
+                                                }
+                                            ]
+                                        }
+                                        1: EndFeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: TargetEnd {
+                                                    cref Relationship ownedRelationship [
+                                                        0: Subsetting {
+                                                        }
+                                                    ]
+                                                    attr Boolean isEnd 'true'
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                        8 : FeatureMembership {
+                            cref Element ownedRelatedElement [
+                                0: Succession {
+                                    attr String identifier '8ca0e89c-feea-4d56-8479-812bcc2738bb'
+                                    cref Relationship ownedRelationship [
+                                        0: EndFeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: SourceEnd {
+                                                    cref Relationship ownedRelationship [
+                                                        0: Subsetting {
+                                                        }
+                                                    ]
+                                                    attr Boolean isEnd 'true'
+                                                }
+                                            ]
+                                        }
+                                        1: EndFeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: TargetEnd {
+                                                    cref Relationship ownedRelationship [
+                                                        0: Subsetting {
+                                                        }
+                                                    ]
+                                                    attr Boolean isEnd 'true'
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                        9 : FeatureMembership {
+                            cref Element ownedRelatedElement [
+                                0: Succession {
+                                    attr String identifier '369c85f1-240b-4d2c-af60-00c3bbac13bd'
+                                    cref Relationship ownedRelationship [
+                                        0: EndFeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: SourceEnd {
+                                                    cref Relationship ownedRelationship [
+                                                        0: Subsetting {
+                                                        }
+                                                    ]
+                                                    attr Boolean isEnd 'true'
+                                                }
+                                            ]
+                                        }
+                                        1: EndFeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: TargetEnd {
+                                                    cref Relationship ownedRelationship [
+                                                        0: Subsetting {
+                                                        }
+                                                    ]
+                                                    attr Boolean isEnd 'true'
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                        10: FeatureMembership {
+                            cref Element ownedRelatedElement [
+                                0: Succession {
+                                    attr String identifier 'dc900289-675f-44bc-9255-a3d246d4b5d4'
+                                    cref Relationship ownedRelationship [
+                                        0: EndFeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: SourceEnd {
+                                                    cref Relationship ownedRelationship [
+                                                        0: Subsetting {
+                                                        }
+                                                    ]
+                                                    attr Boolean isEnd 'true'
+                                                }
+                                            ]
+                                        }
+                                        1: EndFeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: TargetEnd {
+                                                    cref Relationship ownedRelationship [
+                                                        0: Subsetting {
+                                                        }
+                                                    ]
+                                                    attr Boolean isEnd 'true'
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                        11: FeatureMembership {
+                            cref Element ownedRelatedElement [
+                                0: Succession {
+                                    attr String identifier '00df8556-893f-49d3-abe4-762d4b7d491c'
+                                    cref Relationship ownedRelationship [
+                                        0: EndFeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: SourceEnd {
+                                                    cref Relationship ownedRelationship [
+                                                        0: Subsetting {
+                                                        }
+                                                    ]
+                                                    attr Boolean isEnd 'true'
+                                                }
+                                            ]
+                                        }
+                                        1: EndFeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: TargetEnd {
+                                                    cref Relationship ownedRelationship [
+                                                        0: Subsetting {
+                                                        }
+                                                    ]
+                                                    attr Boolean isEnd 'true'
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+            attr String memberName 'actionUsage2'
+        }
+    ]
+}
