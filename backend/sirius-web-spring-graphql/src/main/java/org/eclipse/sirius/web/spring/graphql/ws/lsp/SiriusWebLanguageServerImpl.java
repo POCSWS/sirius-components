@@ -14,8 +14,12 @@ package org.eclipse.sirius.web.spring.graphql.ws.lsp;
 
 import com.google.inject.Singleton;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.SemanticTokens;
 import org.eclipse.lsp4j.SemanticTokensDelta;
@@ -45,6 +49,11 @@ public class SiriusWebLanguageServerImpl extends LanguageServerImpl {
         final ServerCapabilities serverCapabilities = super.createServerCapabilities(params);
         // serverCapabilities.setSemanticTokensProvider(new SemanticTokensWithRegistrationOptions());
         return serverCapabilities;
+    }
+
+    @Override
+    public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams params) {
+        return super.completion(params);
     }
 
     @Override

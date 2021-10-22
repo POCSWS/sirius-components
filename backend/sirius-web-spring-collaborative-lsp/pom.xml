@@ -40,6 +40,11 @@
 	</repositories>
 	
 	<dependencies>
+       <dependency>
+          <groupId>org.eclipse</groupId>
+          <artifactId>org.eclipse.emf.compare</artifactId>
+          <version>1.0</version>
+        </dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
@@ -77,6 +82,11 @@
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.sirius.web</groupId>
+			<artifactId>sirius-web-dsl-sysmlv2</artifactId>
+			<version>0.5.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.sirius.web</groupId>

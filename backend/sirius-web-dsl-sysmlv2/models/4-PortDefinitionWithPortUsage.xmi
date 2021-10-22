@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sysml:Namespace xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sysml="http://www.omg.org/spec/SysML/2.0" 
+identifier="fe0b84ca-ab94-492d-a8ad-20154b35610d">
+ 	<ownedRelationship xsi:type="sysml:Membership" memberElement="//@ownedRelationship.0/@ownedRelatedElement.0">
+		<ownedRelatedElement xsi:type="sysml:PortDefinition" name="MyPortDefinition">
+			<ownedRelationship xsi:type="sysml:FeatureMembership" memberElement="//@ownedRelationship.0/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0">
+				<ownedRelatedElement xsi:type="sysml:PortUsage" isComposite="false">
+					<ownedRelationship xsi:type="sysml:FeatureTyping" identifier="2d4d2fb2-2679-4cde-90ad-53b126ceb0ec" typedFeature="//@ownedRelationship.0/@ownedRelatedElement.0/@ownedRelationship.0/@ownedRelatedElement.0" type="//@ownedRelationship.0/@ownedRelatedElement.0"/>
+				</ownedRelatedElement>
+			</ownedRelationship>
+    	</ownedRelatedElement>
+	</ownedRelationship>
+</sysml:Namespace>
