@@ -351,7 +351,7 @@ public class SysmlLimitedSerializer extends SysMLSwitch<String> {
 							"Only assignment 'ownedRelationship+=PackageMember' of grammar rule 'PackageBody' is supported.");
 				}
 			}).filter(Objects::nonNull).collect(Collectors.joining("\n")), "}").filter(Objects::nonNull)
-					.collect(Collectors.joining(" "));
+					.collect(Collectors.joining("\n"));
 		}
 	}
 

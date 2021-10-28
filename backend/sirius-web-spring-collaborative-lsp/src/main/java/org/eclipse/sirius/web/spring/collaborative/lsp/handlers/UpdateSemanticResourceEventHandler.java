@@ -12,10 +12,13 @@
  *******************************************************************************/
 package org.eclipse.sirius.web.spring.collaborative.lsp.handlers;
 
+import com.google.common.base.Function;
+
 import java.util.Enumeration;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -23,11 +26,21 @@ import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Diff;
 import org.eclipse.emf.compare.EMFCompare;
+import org.eclipse.emf.compare.match.DefaultComparisonFactory;
+import org.eclipse.emf.compare.match.DefaultEqualityHelperFactory;
+import org.eclipse.emf.compare.match.DefaultMatchEngine;
+import org.eclipse.emf.compare.match.IComparisonFactory;
+import org.eclipse.emf.compare.match.IMatchEngine;
+import org.eclipse.emf.compare.match.eobject.IEObjectMatcher;
+import org.eclipse.emf.compare.match.eobject.IdentifierEObjectMatcher;
+import org.eclipse.emf.compare.match.impl.MatchEngineFactoryImpl;
+import org.eclipse.emf.compare.match.impl.MatchEngineFactoryRegistryImpl;
 import org.eclipse.emf.compare.merge.BatchMerger;
 import org.eclipse.emf.compare.merge.IBatchMerger;
 import org.eclipse.emf.compare.merge.IMerger;
 import org.eclipse.emf.compare.scope.DefaultComparisonScope;
 import org.eclipse.emf.compare.scope.IComparisonScope;
+import org.eclipse.emf.compare.utils.UseIdentifiers;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -48,6 +61,7 @@ import org.eclipse.sirius.web.emf.services.EditingContext;
 import org.eclipse.sirius.web.lsp.LspText;
 import org.eclipse.sirius.web.services.api.representations.IRepresentationService;
 import org.eclipse.sirius.web.spring.collaborative.messages.ICollaborativeMessageService;
+import org.omg.sysml.lang.sysml.Relationship;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -148,7 +162,45 @@ public class UpdateSemanticResourceEventHandler implements ILspTextEventHandler 
      * @return the (positive) number of differences merged.
      */
     private int performMerge(Resource resourceToUpdate, Resource parsedResource) {
-        final EMFCompare emfCompare = EMFCompare.builder().build();
+        /**
+         * Horrible hack to make SysML v2 metamodel work through EMFCompare.
+         */
+        Function<EObject, String> idFunction = new Function<>() {
+            // CHECKSTYLE:OFF
+            @Override
+            public String apply(EObject input) {
+                if (input instanceof org.omg.sysml.lang.sysml.Element) {
+                    final org.omg.sysml.lang.sysml.Element element = (org.omg.sysml.lang.sysml.Element) input;
+                    if (element.getName() != null) {
+                        return element.getName();
+                    } else if (!element.getOwnedRelationship().isEmpty()) {
+                        return element.eClass().getName() + "/" //$NON-NLS-1$
+                                + element.getOwnedRelationship().stream().map(Relationship::getOwnedRelatedElement).flatMap(List::stream).map(this::apply).collect(Collectors.joining("::")); //$NON-NLS-1$
+                    } else if (element instanceof org.omg.sysml.lang.sysml.Relationship) {
+                        final org.omg.sysml.lang.sysml.Relationship relationship = (org.omg.sysml.lang.sysml.Relationship) element;
+                        return element.eClass().getName() + "/" + relationship.getOwnedRelatedElement().stream().map(this::apply).collect(Collectors.joining("::")); //$NON-NLS-1$ //$NON-NLS-2$
+                    } else {
+                        throw new IllegalArgumentException("No reliable ID found for: " + element.toString()); //$NON-NLS-1$
+                    }
+                }
+                // a null return here tells the match engine to fall back to the other matchers
+                return null;
+            }
+            // CHECKSTYLE:ON
+        };
+        // Using this matcher as fall back, EMF Compare will still search for XMI IDs on EObjects
+        // for which we had no custom id function.
+        IEObjectMatcher fallBackMatcher = DefaultMatchEngine.createDefaultEObjectMatcher(UseIdentifiers.WHEN_AVAILABLE);
+        IEObjectMatcher customIDMatcher = new IdentifierEObjectMatcher(fallBackMatcher, idFunction);
+        new IdentifierEObjectMatcher(fallBackMatcher, idFunction);
+        IComparisonFactory comparisonFactory = new DefaultComparisonFactory(new DefaultEqualityHelperFactory());
+        IMatchEngine.Factory.Registry customRegistry = MatchEngineFactoryRegistryImpl.createStandaloneInstance();
+        final MatchEngineFactoryImpl matchEngineFactory = new MatchEngineFactoryImpl(customIDMatcher, comparisonFactory);
+        matchEngineFactory.setRanking(20); // default engine ranking is 10, must be higher to override.
+        customRegistry.add(matchEngineFactory);
+        ////
+
+        final EMFCompare emfCompare = EMFCompare.builder().setMatchEngineFactoryRegistry(customRegistry).build();
 
         // By default, EMFCompare spills quite a few INFOs we do not care about in our context.
         doNotShowEmfCompareLog4jLoggerInfos();
