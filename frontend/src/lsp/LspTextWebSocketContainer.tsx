@@ -259,20 +259,142 @@ export const LspTextWebSocketContainer = ({ editingContextId, representationId }
       if (parentDiv) {
         console.log('Component is ready and our parent div exists.');
 
-        // Step 1: if not already configured for our DSL, configure Monaco.
+       // Step 1: if not already configured for our DSL, configure Monaco.
         if (
           monacoDslConfiguration.current === null ||
           monacoDslConfiguration.current.dslName !== lspText.languageName
         ) {
           // TODO: when we implement syntax highlighting with LSP's semantic tokens we won't need these.
-          const statemachineKeywords = new Set<string>();
-          statemachineKeywords.add('events');
-          statemachineKeywords.add('end');
-          statemachineKeywords.add('resetEvents');
-          statemachineKeywords.add('commands');
-          statemachineKeywords.add('state');
-          statemachineKeywords.add('=>');
-          monacoDslConfiguration.current = configureMonacoForLanguage(lspText.languageName, statemachineKeywords);
+          const languageKeywords = new Set<string>();
+          if (lspText.languageName === 'Statemachine') {
+            languageKeywords.add('events');
+            languageKeywords.add('end');
+            languageKeywords.add('resetEvents');
+            languageKeywords.add('commands');
+            languageKeywords.add('state');
+            languageKeywords.add('=>');
+          } else if (lspText.languageName === 'SysML') {
+            languageKeywords.add('id');
+            languageKeywords.add('comment');
+            languageKeywords.add('about');
+            languageKeywords.add('doc');
+            languageKeywords.add('rep');
+            languageKeywords.add('language');
+            languageKeywords.add('@');
+            languageKeywords.add('metadata');
+            languageKeywords.add('feature');
+            languageKeywords.add(':>>');
+            languageKeywords.add('redefines');
+            languageKeywords.add('package');
+            languageKeywords.add('filter');
+            languageKeywords.add('alias');
+            languageKeywords.add('for');
+            languageKeywords.add('import');
+            languageKeywords.add('all');
+            languageKeywords.add('::');
+            languageKeywords.add('**');
+            languageKeywords.add('public');
+            languageKeywords.add('private');
+            languageKeywords.add('protected');
+            languageKeywords.add(':>');
+            languageKeywords.add('specializes');
+            languageKeywords.add('ordered');
+            languageKeywords.add('nonunique');
+            languageKeywords.add('defined');
+            languageKeywords.add('by');
+            languageKeywords.add('subsets');
+            languageKeywords.add('..');
+            languageKeywords.add('bind');
+            languageKeywords.add('as');
+            languageKeywords.add('succession');
+            languageKeywords.add('first');
+            languageKeywords.add('then');
+            languageKeywords.add('dependency');
+            languageKeywords.add('from');
+            languageKeywords.add('to');
+            languageKeywords.add('abstract');
+            languageKeywords.add('variation');
+            languageKeywords.add('variant');
+            languageKeywords.add('in');
+            languageKeywords.add('out');
+            languageKeywords.add('inout');
+            languageKeywords.add('end');
+            languageKeywords.add('ref');
+            languageKeywords.add('default');
+            languageKeywords.add('attribute');
+            languageKeywords.add('def');
+            languageKeywords.add('enum');
+            languageKeywords.add('occurrence');
+            languageKeywords.add('individual');
+            languageKeywords.add('snapshot');
+            languageKeywords.add('timeslice');
+            languageKeywords.add('event');
+            languageKeywords.add('then');
+            languageKeywords.add('item');
+            languageKeywords.add('part');
+            languageKeywords.add('block');
+            languageKeywords.add('port');
+            languageKeywords.add('~');
+            languageKeywords.add('connection');
+            languageKeywords.add('assoc');
+            languageKeywords.add('connect');
+            languageKeywords.add('message');
+            languageKeywords.add('of');
+            languageKeywords.add('stream');
+            languageKeywords.add('flow');
+            languageKeywords.add('interface');
+            languageKeywords.add('allocation');
+            languageKeywords.add('allocate');
+            languageKeywords.add('action');
+            languageKeywords.add('perform');
+            languageKeywords.add('action');
+            languageKeywords.add('accept');
+            languageKeywords.add('via');
+            languageKeywords.add('send');
+            languageKeywords.add('merge');
+            languageKeywords.add('decide');
+            languageKeywords.add('join');
+            languageKeywords.add('fork');
+            languageKeywords.add('then');
+            languageKeywords.add('else');
+            languageKeywords.add('state');
+            languageKeywords.add('parallel');
+            languageKeywords.add('entry');
+            languageKeywords.add('do');
+            languageKeywords.add('exit');
+            languageKeywords.add('exhibit');
+            languageKeywords.add('transition');
+            languageKeywords.add('if');
+            languageKeywords.add('calc');
+            languageKeywords.add('return');
+            languageKeywords.add('constraint');
+            languageKeywords.add('assert');
+            languageKeywords.add('not');
+            languageKeywords.add('requirement');
+            languageKeywords.add('subject');
+            languageKeywords.add('assume');
+            languageKeywords.add('require');
+            languageKeywords.add('frame');
+            languageKeywords.add('actor');
+            languageKeywords.add('stakeholder');
+            languageKeywords.add('satisfy');
+            languageKeywords.add('concern');
+            languageKeywords.add('case');
+            languageKeywords.add('objective');
+            languageKeywords.add('analysis');
+            languageKeywords.add('verification');
+            languageKeywords.add('verify');
+            languageKeywords.add('use');
+            languageKeywords.add('view');
+            languageKeywords.add('include');
+            languageKeywords.add('render');
+            languageKeywords.add('expose');
+            languageKeywords.add('viewpoint');
+            languageKeywords.add('rendering');
+          } else {
+            // No keywords.
+          }
+          monacoDslConfiguration.current = configureMonacoForLanguage(lspText.languageName, languageKeywords);
         }
 
         // Step 2: if it does not already exist, create the Monaco editor.
