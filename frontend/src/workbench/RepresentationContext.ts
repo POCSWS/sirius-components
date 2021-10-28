@@ -12,6 +12,7 @@
  *******************************************************************************/
 import { DiagramWebSocketContainer } from 'diagram/DiagramWebSocketContainer';
 import { FormWebSocketContainer } from 'form/FormWebSocketContainer';
+import { LspTextWebSocketContainer } from 'lsp/LspTextWebSocketContainer';
 import React from 'react';
 import { RepresentationComponentRegistry } from 'workbench/RepresentationContext.types';
 import { RepresentationComponentProps } from './Workbench.types';
@@ -22,11 +23,13 @@ const registry: RepresentationComponentRegistry = {
       return DiagramWebSocketContainer;
     } else if (representation.kind === 'Form') {
       return FormWebSocketContainer;
+    } else if (representation.kind === 'Text with LSP') {
+      return LspTextWebSocketContainer;
     }
     return (props: RepresentationComponentProps) => null;
   },
   isRepresentation: (kind: string): boolean => {
-    return kind === 'Diagram' || kind === 'Form';
+    return kind === 'Diagram' || kind === 'Form' || kind === 'Text with LSP';
   },
 };
 

@@ -1,0 +1,29 @@
+= ADR-025 - Use language server for textual representations
+
+== Context
+
+On our path to integrating Xtext-based textual DSLs, we are so far able to serve an arbitrary textual representation of an EObject to the frontend.
+We want this arbitrary textual representation to be provided by the Language Server of the DSL provided by Xtext.
+
+== Decision
+
+The Xtext Language Server must be provided as a fat jar.
+Each Xtext DSL should come with its language server jar.
+
+For now, we will create and start a language server everytime we open a textual representation.
+The server of a representation will be shutdown upon closing the representation.
+
+Since we have no language client for now, we will test the LS with a stub language client located in the backend to send a simple request like `textDocument/didOpen`.
+
+== Status
+
+WIP
+
+== Consequences
+
+Launching a language server per representation is most likely overkill.
+In a first refinement step, we may settle for one language server per DSL per project.
+If Xtext can handle having one language server handle services for multiple DSLs, then we may choose to further refine to using one language server per project.
+Note that this will probably be necessary for cross-documents references inside a projet.
+
+We may have have to refine even further to support cross-projet references.

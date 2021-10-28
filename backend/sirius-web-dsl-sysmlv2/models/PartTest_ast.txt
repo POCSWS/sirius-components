@@ -1,0 +1,182 @@
+17:50:20.363 [main] DEBUG com.tngtech.archunit.ArchConfiguration - No configuration found in classpath at archunit.properties => Using default configuration
+Namespace {
+    cref Relationship ownedRelationship [
+        0: Membership {
+            cref Element ownedRelatedElement [
+                0: Package {
+                    cref Relationship ownedRelationship [
+                        0: Membership {
+                            cref Element ownedRelatedElement [
+                                0: PartUsage {
+                                    cref Relationship ownedRelationship [
+                                        0: FeatureTyping {
+                                        }
+                                    ]
+                                    attr Boolean isComposite 'false'
+                                }
+                            ]
+                        }
+                        1: Membership {
+                            cref Element ownedRelatedElement [
+                                0: PartDefinition {
+                                    cref Relationship ownedRelationship [
+                                        0: FeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: PartUsage {
+                                                    cref Relationship ownedRelationship [
+                                                        0: FeatureTyping {
+                                                        }
+                                                    ]
+                                                    attr String aliasId [
+                                                        0: '1'
+                                                    ]
+                                                    attr String humanId '1'
+                                                    attr Boolean isComposite 'true'
+                                                }
+                                            ]
+                                        }
+                                        1: FeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: PortUsage {
+                                                    cref Relationship ownedRelationship [
+                                                        0: FeatureTyping {
+                                                        }
+                                                    ]
+                                                    attr Boolean isComposite 'false'
+                                                }
+                                            ]
+                                            attr VisibilityKind visibility 'protected'
+                                        }
+                                        2: FeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: AttributeUsage {
+                                                    cref Relationship ownedRelationship [
+                                                        0: Membership {
+                                                            cref Element ownedRelatedElement [
+                                                                0: MultiplicityRange {
+                                                                    cref Relationship ownedRelationship [
+                                                                        0: Membership {
+                                                                            cref Element ownedRelatedElement [
+                                                                                0: LiteralInteger {
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                        1: Membership {
+                                                                            cref Element ownedRelatedElement [
+                                                                                0: LiteralInteger {
+                                                                                    attr Integer value '2'
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                    attr Boolean isComposite 'false'
+                                                }
+                                            ]
+                                        }
+                                        3: FeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: AttributeUsage {
+                                                    cref Relationship ownedRelationship [
+                                                        0: Subsetting {
+                                                        }
+                                                    ]
+                                                    attr Boolean isComposite 'false'
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                        2: Membership {
+                            cref Element ownedRelatedElement [
+                                0: PartDefinition {
+                                    cref Relationship ownedRelationship [
+                                        0: FeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: PartUsage {
+                                                    cref Relationship ownedRelationship [
+                                                        0: FeatureTyping {
+                                                        }
+                                                    ]
+                                                    attr Boolean isAbstract 'true'
+                                                    attr Boolean isComposite 'true'
+                                                }
+                                            ]
+                                        }
+                                        1: FeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: PortUsage {
+                                                    cref Relationship ownedRelationship [
+                                                        0: ConjugatedPortTyping {
+                                                        }
+                                                    ]
+                                                    attr Boolean isComposite 'false'
+                                                }
+                                            ]
+                                        }
+                                        2: Membership {
+                                            cref Element ownedRelatedElement [
+                                                0: Package {
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                    attr String aliasId [
+                                        0: 'xx'
+                                    ]
+                                    attr String humanId 'xx'
+                                    attr Boolean isAbstract 'true'
+                                }
+                            ]
+                        }
+                        3: Membership {
+                            cref Element ownedRelatedElement [
+                                0: PortDefinition {
+                                    cref Relationship ownedRelationship [
+                                        0: FeatureMembership {
+                                            cref Element ownedRelatedElement [
+                                                0: ReferenceUsage {
+                                                    cref Relationship ownedRelationship [
+                                                        0: FeatureTyping {
+                                                        }
+                                                        1: FeatureTyping {
+                                                        }
+                                                    ]
+                                                    attr Boolean isComposite 'false'
+                                                    attr FeatureDirectionKind direction 'in'
+                                                }
+                                            ]
+                                            attr VisibilityKind visibility 'private'
+                                        }
+                                        1: Membership {
+                                            attr String memberName 'z1'
+                                        }
+                                        2: Membership {
+                                            attr String memberName 'z2'
+                                        }
+                                        3: Membership {
+                                            cref Element ownedRelatedElement [
+                                                0: ConjugatedPortDefinition {
+                                                    cref Relationship ownedRelationship [
+                                                        0: PortConjugation {
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                            attr VisibilityKind visibility 'private'
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

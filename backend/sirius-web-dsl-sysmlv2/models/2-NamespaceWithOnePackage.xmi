@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sysml:Namespace 
+xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sysml="http://www.omg.org/spec/SysML/2.0" 
+identifier="fe0b84ca-ab94-492d-a8ad-20154b35610d">
+  <ownedRelationship xsi:type="sysml:Membership" memberElement="fe0b84ca-ab94-492d-a8ad-20154b35610e">
+    <ownedRelatedElement xsi:type="sysml:Package" identifier="fe0b84ca-ab94-492d-a8ad-20154b35610e"/>
+  </ownedRelationship>
+</sysml:Namespace>

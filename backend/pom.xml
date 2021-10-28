@@ -37,6 +37,7 @@
 		<module>sirius-web-collaborative-api</module>
 		<module>sirius-web-collaborative-diagrams-api</module>
 		<module>sirius-web-collaborative-forms-api</module>
+		<module>sirius-web-collaborative-lsp-api</module>
 		<module>sirius-web-collaborative-trees-api</module>
 		<module>sirius-web-collaborative-validation-api</module>
 		<module>sirius-web-services-api</module>
@@ -45,8 +46,12 @@
 		<module>sirius-web-diagrams-layout</module>
 		<module>sirius-web-diagrams-tests</module>
 		<module>sirius-web-diagrams</module>
+		<module>sirius-web-dsl-statemachine</module>
+		<module>sirius-web-dsl-sysmlv2</module>
+		<module>sirius-web-dsl-sysmlv2-edit</module>
 		<module>sirius-web-forms-tests</module>
 		<module>sirius-web-forms</module>
+		<module>sirius-web-lsp</module>
 		<module>sirius-web-graphiql</module>
 		<module>sirius-web-graphql-schema</module>
 		<module>sirius-web-graphql-utils</module>
@@ -56,6 +61,7 @@
 		<module>sirius-web-services</module>
 		<module>sirius-web-spring-collaborative-diagrams</module>
 		<module>sirius-web-spring-collaborative-forms</module>
+		<module>sirius-web-spring-collaborative-lsp</module>
 		<module>sirius-web-spring-collaborative-trees</module>
 		<module>sirius-web-spring-collaborative-validation</module>
 		<module>sirius-web-spring-collaborative</module>
@@ -76,5 +82,6 @@
 		<module>sirius-web-validation</module>
 		<module>sirius-web-view</module>
 		<module>sirius-web-view-edit</module>
+		<module>sirius-web-xtext</module>
 	</modules>
 </project>
